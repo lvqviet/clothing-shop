@@ -1,91 +1,94 @@
+import { Feather } from "@expo/vector-icons";
+import React from "react";
 import {
-	StyleSheet,
-	View,
-	Button,
-	TextInput,
-	TouchableOpacity,
-	Image,
-	ScrollView,
-	SafeAreaView,
-} from 'react-native'
-import React from 'react'
-import { useDispatch, useSelector } from 'react-redux'
-import { actions } from '../redux'
-import { AppText, Banner, ProductItem } from '../components'
-import Entypo from '@expo/vector-icons/Entypo'
+  Image,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  View,
+} from "react-native";
+import { useDispatch, useSelector } from "react-redux";
+import { Banner, Button, Cart, CustomText, ProductItem } from "../components";
+import { actions } from "../redux";
 
 const Home = ({ navigation }) => {
-	const dispatch = useDispatch()
-	const cart = useSelector(state => state.cart)
+  const dispatch = useDispatch();
+  const cart = useSelector((state) => state.cart);
 
-	const onClick = () => {
-		dispatch(actions.cart.add_cart(2))
-	}
+  const onClick = () => {
+    dispatch(actions.cart.add_cart(2));
+  };
 
-	return (
-		<SafeAreaView style={{ flex: 1, paddingTop: 25 }}>
-			<ScrollView style={{ flex: 1, backgroundColor: '#fff' }}>
-				<Header navigation={navigation} />
-				<View style={{ flex: 1, alignItems: 'center', justifyContent: 'flex-start' }}>
-					<Banner />
+  return (
+    <SafeAreaView style={styles.container}>
+      <Header navigation={navigation} />
+      <ScrollView style={styles.scrollCtn}>
+        <View style={styles.content}>
+          <Banner />
 
-					<View
-						style={{
-							flexWrap: 'wrap',
-							width: '100%',
-							flexDirection: 'row',
-							justifyContent: 'space-evenly',
-							marginTop: 30,
-						}}
-					>
-						{[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((e, index) => (
-							<ProductItem key={index} />
-						))}
-					</View>
+          <View style={styles.listProduct}>
+            {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((e, index) => (
+              <ProductItem key={index} title='Product Name' price={100000} />
+            ))}
+          </View>
 
-					<AppText text='Home Page' />
-					<AppText text={cart.total} />
+          <CustomText text='Home Page' />
+          <CustomText text={cart.total} />
 
-					<Button title='test' onPress={onClick} />
-				</View>
-			</ScrollView>
-		</SafeAreaView>
-	)
-}
+          <Button title='test' onPress={onClick} />
+        </View>
+      </ScrollView>
+    </SafeAreaView>
+  );
+};
 
 const Header = ({ navigation }) => (
-	<SafeAreaView
-		style={{
-			display: 'flex',
-			width: '100%',
-			paddingHorizontal: 15,
-			flexDirection: 'row',
-			paddingVertical: 10,
-			backgroundColor: '#fff',
-			justifyContent: 'space-between',
-		}}
-	>
-		<TextInput
-			style={{
-				borderRadius: 10,
-				borderWidth: 1,
-				width: '70%',
-				paddingHorizontal: 10,
-				fontFamily: 'Poppins_400Regular',
-			}}
-			placeholder='Search...'
-		/>
+  <View style={styles.containerHeader}>
+    <Image source={require("../../assets/logo-01.png")} resizeMode='contain' />
 
-		<TouchableOpacity
-			style={{ alignItems: 'center', justifyContent: 'center' }}
-			onPress={() => navigation.navigate('LOGIN')}
-		>
-			<AppText text='Log in' />
-		</TouchableOpacity>
-		<TouchableOpacity onPress={() => console.log('cart')}>
-			<Entypo name='shopping-cart' size={24} color='black' />
-		</TouchableOpacity>
-	</SafeAreaView>
-)
+    {/* <Button title='Login' onPress={() => navigation.navigate("LOGIN")} /> */}
+    <View style={styles.listIcons}>
+      <Cart navigation={navigation} />
+      <Feather name='heart' size={24} color='black' style={styles.icon} />
+      <Feather name='menu' size={24} color='black' />
+    </View>
+  </View>
+);
 
-export default Home
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: "#fff" },
+  scrollCtn: { flex: 1, marginTop: 50 },
+  content: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "flex-start",
+  },
+  listProduct: {
+    flexWrap: "wrap",
+    width: "100%",
+    flexDirection: "row",
+    justifyContent: "space-evenly",
+    marginTop: 30,
+  },
+  containerHeader: {
+    display: "flex",
+    width: "100%",
+    paddingHorizontal: 15,
+    paddingTop: 50,
+    flexDirection: "row",
+    backgroundColor: "#fff",
+    justifyContent: "space-between",
+    alignItems: "center",
+    position: "absolute",
+    top: 0,
+    zIndex: 100,
+  },
+  listIcons: {
+    flexDirection: "row",
+  },
+  icon: {
+    marginRight: 15,
+  },
+});
+
+export default Home;

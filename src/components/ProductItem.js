@@ -1,41 +1,57 @@
-import { StyleSheet, Text, View, Dimensions, Image, TouchableOpacity } from 'react-native'
-import React from 'react'
-import AppText from './AppText'
+import React from "react";
+import {
+  Dimensions,
+  Image,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import Color from "../constants/Color";
+import CustomText from "./CustomText";
 
-const width = Dimensions.get('window').width
+const width = Dimensions.get("window").width;
 
-const ProductItem = props => {
-	return (
-		<TouchableOpacity style={styles.container} onPress={() => console.log('cc')}>
-			<Image
-				source={{
-					uri: 'https://media.sproutsocial.com/uploads/2017/02/10x-featured-social-media-image-size.png',
-				}}
-				resizeMode='cover'
-				style={styles.image}
-			/>
-			<View style={styles.info}>
-				<AppText text='Product Item' />
-				<AppText text='100.000đ' />
-			</View>
-		</TouchableOpacity>
-	)
-}
+const ProductItem = ({ title, price }) => {
+  return (
+    <TouchableOpacity
+      style={styles.container}
+      onPress={() => console.log("cc")}
+    >
+      <Image
+        source={require("../../assets/product.jpg")}
+        resizeMode='contain'
+        style={styles.image}
+      />
+      <View style={styles.info}>
+        <CustomText text={title} style={styles.title} />
+        <CustomText text={`${price}đ`} style={styles.price} />
+      </View>
+    </TouchableOpacity>
+  );
+};
 
-export default ProductItem
+export default ProductItem;
 
 const styles = StyleSheet.create({
-	container: {
-		width: width / 2 - 15,
-		elevation: 5,
-		backgroundColor: '#fff',
-		marginBottom: 20,
-	},
-	image: {
-		width: '100%',
-		height: 200,
-	},
-	info: {
-		padding: 10,
-	},
-})
+  container: {
+    width: width / 2 - 15,
+    elevation: 5,
+    backgroundColor: "#fff",
+    marginBottom: 20,
+  },
+  image: {
+    width: "100%",
+    height: 200,
+  },
+  info: {
+    padding: 10,
+  },
+  title: {
+    fontSize: 14,
+    color: Color.grey999999,
+    marginBottom: 8,
+  },
+  price: {
+    fontSize: 14,
+  },
+});
