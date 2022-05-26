@@ -8,4 +8,5 @@ export default Color = {
   grey999999: "#999999",
   light: "#F3F4FB",
   darkBlue: "#7978B5",
+  text: "#333",
 };

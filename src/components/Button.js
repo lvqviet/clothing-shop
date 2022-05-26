@@ -1,7 +1,6 @@
 import React from "react";
-import { TouchableOpacity } from "react-native";
+import { Text, TouchableOpacity } from "react-native";
 import Color from "../constants/Color";
-import CustomText from "./CustomText";
 
 const Button = ({ title, color, onPress = () => {} }) => {
   return (
@@ -18,10 +17,15 @@ const Button = ({ title, color, onPress = () => {} }) => {
         borderRadius: 25,
       }}
     >
-      <CustomText
-        style={{ color: Color.white, fontWeight: "bold", fontSize: 18 }}
-        text={title}
-      />
+      <Text
+        style={{
+          color: Color.white,
+          fontFamily: "Poppins_600SemiBold",
+          fontSize: 18,
+        }}
+      >
+        {title}
+      </Text>
     </TouchableOpacity>
   );
 };

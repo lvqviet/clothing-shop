@@ -1,4 +1,10 @@
-import { Poppins_400Regular, useFonts } from "@expo-google-fonts/poppins";
+import {
+  Poppins_300Light,
+  Poppins_400Regular,
+  Poppins_500Medium,
+  Poppins_600SemiBold,
+  useFonts,
+} from "@expo-google-fonts/poppins";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { Text, View } from "react-native";
@@ -38,7 +44,10 @@ export const ProtectedRoute = ({ children }) => (
 
 function App() {
   const [fontsLoaded] = useFonts({
+    Poppins_300Light,
     Poppins_400Regular,
+    Poppins_500Medium,
+    Poppins_600SemiBold,
   });
 
   if (!fontsLoaded) {

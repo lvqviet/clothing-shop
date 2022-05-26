@@ -36,7 +36,7 @@ const styles = StyleSheet.create({
   },
   amount: {
     color: Color.white,
-    fontWeight: "bold",
+    fontFamily: "Poppins_600SemiBold",
     fontSize: 14,
   },
 });

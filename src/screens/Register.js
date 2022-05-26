@@ -148,7 +148,7 @@ const styles = StyleSheet.create({
   register: {
     color: Color.black,
     fontSize: 40,
-    fontWeight: "bold",
+    fontFamily: "Poppins_600SemiBold",
   },
   title: {
     color: Color.grey999999,
@@ -157,7 +157,7 @@ const styles = StyleSheet.create({
   },
   login: {
     color: Color.black,
-    fontWeight: "bold",
+    fontFamily: "Poppins_600SemiBold",
     textAlign: "center",
     fontSize: 16,
   },

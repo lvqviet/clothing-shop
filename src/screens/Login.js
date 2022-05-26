@@ -1,12 +1,12 @@
-import React from "react";
+import React, { useState } from "react";
 import { Keyboard, SafeAreaView, StyleSheet, View } from "react-native";
 // import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Button, CustomText, Input, Loader } from "../components";
 import Color from "../constants/Color";
 const LoginScreen = ({ navigation }) => {
-  const [inputs, setInputs] = React.useState({ email: "", password: "" });
-  const [errors, setErrors] = React.useState({});
-  const [loading, setLoading] = React.useState(false);
+  const [inputs, setInputs] = useState({ email: "", password: "" });
+  const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
 
   const validate = async () => {
     Keyboard.dismiss();
@@ -101,7 +101,7 @@ const LoginScreen = ({ navigation }) => {
 
 const styles = StyleSheet.create({
   loginText: {
-    fontWeight: "bold",
+    fontFamily: "Poppins_600SemiBold",
     color: Color.black,
     fontSize: 40,
   },
@@ -112,7 +112,7 @@ const styles = StyleSheet.create({
   },
   register: {
     color: Color.black,
-    fontWeight: "bold",
+    fontFamily: "Poppins_600SemiBold",
     textAlign: "center",
     fontSize: 16,
   },
