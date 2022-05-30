@@ -50,7 +50,7 @@ const LoginScreen = ({ navigation }) => {
       // } else {
       //   Alert.alert('Error', 'User does not exist');
       // }
-    }, 3000);
+    }, 2000);
   };
 
   const handleOnchange = (text, input) => {
