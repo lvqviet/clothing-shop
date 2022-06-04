@@ -11,36 +11,40 @@ import { Text, View } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { Provider } from "react-redux";
 import store from "./src/redux/store";
-import { Home, Login, Register } from "./src/screens";
+// import { Home, Login, Main, ProductDetail, Register } from "./src/screens";
+import { Ionicons } from "@expo/vector-icons";
+import Color from "./src/constants/Color";
+import Main from "./src/screens/Main";
 
-const Stack = createNativeStackNavigator();
+// const Stack = createNativeStackNavigator();
 
-const ProtectedRoutes = [
-  {
-    name: "HOME",
-    component: Home,
-    headerShown: false,
-  },
-  {
-    name: "LOGIN",
-    component: Login,
-    headerShown: false,
-  },
-  {
-    name: "REGISTER",
-    component: Register,
-    headerShown: false,
-  },
-];
-
-export const ProtectedRoute = ({ children }) => (
-  <Stack.Navigator
-    initialRouteName='HOME'
-    screenOptions={{ gestureDirection: "horizontal" }}
-  >
-    {children}
-  </Stack.Navigator>
-);
+// const ProtectedRoutes = [
+//   // {
+//   //   name: "MAIN",
+//   //   component: Main,
+//   //   headerShown: false,
+//   // },
+//   {
+//     name: "HOME",
+//     component: Home,
+//     headerShown: false,
+//   },
+//   {
+//     name: "LOGIN",
+//     component: Login,
+//     headerShown: false,
+//   },
+//   {
+//     name: "REGISTER",
+//     component: Register,
+//     headerShown: false,
+//   },
+//   {
+//     name: "PRODUCT_DETAIL",
+//     component: ProductDetail,
+//     headerShown: false,
+//   },
+// ];
 
 function App() {
   const [fontsLoaded] = useFonts({
@@ -80,20 +84,7 @@ function App() {
     <Provider store={store}>
       <SafeAreaProvider>
         <NavigationContainer>
-          <ProtectedRoute>
-            {ProtectedRoutes.map((item) => (
-              <Stack.Screen
-                key={item.name}
-                name={item.name}
-                component={item.component}
-                options={{
-                  title: item.title,
-                  header: item.header,
-                  headerShown: item.headerShown,
-                }}
-              />
-            ))}
-          </ProtectedRoute>
+          <Main />
         </NavigationContainer>
       </SafeAreaProvider>
     </Provider>

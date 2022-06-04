@@ -11,11 +11,11 @@ import CustomText from "./CustomText";
 
 const width = Dimensions.get("window").width;
 
-const ProductItem = ({ title, price }) => {
+const ProductItem = ({ title, price, onPress = () => {} }) => {
   return (
     <TouchableOpacity
       style={styles.container}
-      onPress={() => console.log("cc")}
+      onPress={onPress}
     >
       <Image
         source={require("../../assets/product.jpg")}

@@ -1,7 +1,6 @@
-import { Feather, Ionicons } from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons";
 import React, { useState } from "react";
 import {
-  Image,
   SafeAreaView,
   ScrollView,
   StyleSheet,
@@ -10,7 +9,7 @@ import {
   View,
 } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
-import { Banner, Button, Cart, CustomText, ProductItem } from "../components";
+import { Banner, Button, CustomText, Header, ProductItem } from "../components";
 import Color from "../constants/Color";
 import { actions } from "../redux";
 
@@ -31,6 +30,10 @@ const Home = ({ navigation }) => {
 
   const onClick = () => {
     dispatch(actions.cart.add_cart(2));
+  };
+
+  const onPressItem = () => {
+    navigation.navigate("PRODUCT_DETAIL");
   };
 
   return (
@@ -77,7 +80,12 @@ const Home = ({ navigation }) => {
 
           <View style={styles.listProduct}>
             {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((e, index) => (
-              <ProductItem key={index} title='Product Name' price={100000} />
+              <ProductItem
+                key={index}
+                title='Product Name'
+                price={100000}
+                onPress={onPressItem}
+              />
             ))}
           </View>
 
@@ -91,18 +99,6 @@ const Home = ({ navigation }) => {
   );
 };
 
-const Header = ({ navigation }) => (
-  <View style={styles.containerHeader}>
-    <Image source={require("../../assets/logo-01.png")} resizeMode='contain' />
-
-    <View style={styles.listIcons}>
-      <Cart navigation={navigation} />
-      <Feather name='heart' size={24} color='black' style={styles.icon} />
-      <Feather name='menu' size={24} color='black' />
-    </View>
-  </View>
-);
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -110,7 +106,7 @@ const styles = StyleSheet.create({
   },
   scrollCtn: {
     flex: 1,
-    marginTop: 50,
+    marginTop: 45,
   },
   content: {
     flex: 1,
@@ -123,25 +119,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-evenly",
     marginTop: 30,
-  },
-  containerHeader: {
-    display: "flex",
-    width: "100%",
-    paddingHorizontal: 15,
-    paddingTop: 50,
-    flexDirection: "row",
-    backgroundColor: "#fff",
-    justifyContent: "space-between",
-    alignItems: "center",
-    position: "absolute",
-    top: 0,
-    zIndex: 100,
-  },
-  listIcons: {
-    flexDirection: "row",
-  },
-  icon: {
-    marginRight: 15,
   },
   overviewCtn: {
     width: "100%",
