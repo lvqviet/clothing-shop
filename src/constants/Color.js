@@ -6,6 +6,7 @@ export default Color = {
   white: "#fff",
   black: "#000",
   grey999999: "#999999",
+  grey555555: "#555555",
   light: "#F3F4FB",
   darkBlue: "#7978B5",
   text: "#333",

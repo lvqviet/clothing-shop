@@ -5,14 +5,12 @@ import Color from "../constants/Color";
 import CustomText from "./CustomText";
 
 export default function Cart({ navigation }) {
+  function onPress() {
+    navigation.navigate("CART");
+  }
   return (
     <View style={styles.icon}>
-      <Entypo
-        name='shopping-cart'
-        size={24}
-        color='black'
-        onPress={() => navigation.navigate("LOGIN")}
-      />
+      <Entypo name='shopping-cart' size={24} color='black' onPress={onPress} />
       <View style={styles.amountCtn}>
         <CustomText text={"3"} style={styles.amount} />
       </View>

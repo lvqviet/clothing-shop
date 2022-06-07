@@ -11,40 +11,43 @@ import { Text, View } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { Provider } from "react-redux";
 import store from "./src/redux/store";
-// import { Home, Login, Main, ProductDetail, Register } from "./src/screens";
-import { Ionicons } from "@expo/vector-icons";
-import Color from "./src/constants/Color";
+import { Account, Cart, Login, ProductDetail, Register } from "./src/screens";
 import Main from "./src/screens/Main";
 
-// const Stack = createNativeStackNavigator();
+const Stack = createNativeStackNavigator();
 
-// const ProtectedRoutes = [
-//   // {
-//   //   name: "MAIN",
-//   //   component: Main,
-//   //   headerShown: false,
-//   // },
-//   {
-//     name: "HOME",
-//     component: Home,
-//     headerShown: false,
-//   },
-//   {
-//     name: "LOGIN",
-//     component: Login,
-//     headerShown: false,
-//   },
-//   {
-//     name: "REGISTER",
-//     component: Register,
-//     headerShown: false,
-//   },
-//   {
-//     name: "PRODUCT_DETAIL",
-//     component: ProductDetail,
-//     headerShown: false,
-//   },
-// ];
+const ProtectedRoutes = [
+  {
+    name: "HOME",
+    component: Main,
+    headerShown: false,
+  },
+  {
+    name: "LOGIN",
+    component: Login,
+    headerShown: false,
+  },
+  {
+    name: "REGISTER",
+    component: Register,
+    headerShown: false,
+  },
+  {
+    name: "PRODUCT_DETAIL",
+    component: ProductDetail,
+    headerShown: false,
+  },
+  {
+    name: "ACCOUNT",
+    component: Account,
+    headerShown: false,
+  },
+  {
+    name: "CART",
+    component: Cart,
+    headerShown: false,
+  },
+];
 
 function App() {
   const [fontsLoaded] = useFonts({
@@ -84,7 +87,53 @@ function App() {
     <Provider store={store}>
       <SafeAreaProvider>
         <NavigationContainer>
-          <Main />
+          <Stack.Navigator>
+            {ProtectedRoutes.map((item) => (
+              <Stack.Screen
+                key={item.name}
+                name={item.name}
+                component={item.component}
+                options={{
+                  headerShown: item.headerShown,
+                }}
+              />
+            ))}
+            {/* <Stack.Screen
+              name='HOME'
+              component={Main}
+              options={{
+                headerShown: false,
+              }}
+            />
+            <Stack.Screen
+              name='PRODUCT_DETAIL'
+              component={ProductDetail}
+              options={{
+                headerShown: false,
+              }}
+            />
+            <Stack.Screen
+              name='LOGIN'
+              component={Login}
+              options={{
+                headerShown: false,
+              }}
+            />
+            <Stack.Screen
+              name='REGISTER'
+              component={Register}
+              options={{
+                headerShown: false,
+              }}
+            />
+            <Stack.Screen
+              name='ACCOUNT'
+              component={Account}
+              options={{
+                headerShown: false,
+              }}
+            /> */}
+          </Stack.Navigator>
         </NavigationContainer>
       </SafeAreaProvider>
     </Provider>

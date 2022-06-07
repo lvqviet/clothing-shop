@@ -4,7 +4,8 @@ import React from "react";
 import { StyleSheet } from "react-native";
 import Color from "../constants/Color";
 import { MainStackNavigator } from "../navigation/RootNavigator";
-import Account from "./Account";
+import Home from "./Home";
+import Profile from "./Profile";
 
 const Tab = createBottomTabNavigator();
 
@@ -13,7 +14,7 @@ const Main = () => {
     <Tab.Navigator>
       <Tab.Screen
         name='Home'
-        component={MainStackNavigator}
+        component={Home}
         options={{
           headerShown: false,
           tabBarIcon: () => (
@@ -22,8 +23,8 @@ const Main = () => {
         }}
       />
       <Tab.Screen
-        name='Account'
-        component={Account}
+        name='Profile'
+        component={Profile}
         options={{
           headerShown: false,
           tabBarIcon: () => (

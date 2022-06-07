@@ -1,7 +1,12 @@
 import React from "react";
 import { Text } from "react-native";
 
-export default function CustomText({ text, style, onPress = () => {} }) {
+export default function CustomText({
+  text,
+  style,
+  numberOfLines,
+  onPress = () => {},
+}) {
   return (
     <Text
       style={[
@@ -13,6 +18,7 @@ export default function CustomText({ text, style, onPress = () => {} }) {
         },
         style,
       ]}
+      numberOfLines={numberOfLines}
       onPress={onPress ?? null}
     >
       {text}
