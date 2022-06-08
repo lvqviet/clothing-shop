@@ -11,7 +11,14 @@ import { Text, View } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { Provider } from "react-redux";
 import store from "./src/redux/store";
-import { Account, Cart, Login, ProductDetail, Register } from "./src/screens";
+import {
+  Account,
+  Cart,
+  Checkout,
+  Login,
+  ProductDetail,
+  Register,
+} from "./src/screens";
 import Main from "./src/screens/Main";
 
 const Stack = createNativeStackNavigator();
@@ -45,6 +52,11 @@ const ProtectedRoutes = [
   {
     name: "CART",
     component: Cart,
+    headerShown: false,
+  },
+  {
+    name: "CHECKOUT",
+    component: Checkout,
     headerShown: false,
   },
 ];
@@ -98,41 +110,6 @@ function App() {
                 }}
               />
             ))}
-            {/* <Stack.Screen
-              name='HOME'
-              component={Main}
-              options={{
-                headerShown: false,
-              }}
-            />
-            <Stack.Screen
-              name='PRODUCT_DETAIL'
-              component={ProductDetail}
-              options={{
-                headerShown: false,
-              }}
-            />
-            <Stack.Screen
-              name='LOGIN'
-              component={Login}
-              options={{
-                headerShown: false,
-              }}
-            />
-            <Stack.Screen
-              name='REGISTER'
-              component={Register}
-              options={{
-                headerShown: false,
-              }}
-            />
-            <Stack.Screen
-              name='ACCOUNT'
-              component={Account}
-              options={{
-                headerShown: false,
-              }}
-            /> */}
           </Stack.Navigator>
         </NavigationContainer>
       </SafeAreaProvider>

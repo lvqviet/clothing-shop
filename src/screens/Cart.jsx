@@ -8,12 +8,16 @@ import {
   Dimensions,
 } from "react-native";
 import React from "react";
-import { CustomText, Header } from "../components";
+import { Button, CustomText, Header } from "../components";
 import Color from "../constants/Color";
 import { Feather } from "@expo/vector-icons";
 
 const width = Dimensions.get("screen").width;
 const Cart = ({ navigation }) => {
+  function checkout() {
+    navigation.navigate("CHECKOUT");
+  }
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>
       <Header
@@ -56,8 +60,11 @@ const Cart = ({ navigation }) => {
             justifyContent: "space-between",
           }}
         >
-          <CustomText text='Total' style={styles.total} />
+          <CustomText text='Total(7)' style={styles.total} />
           <CustomText text='146.000d' style={styles.total} />
+        </View>
+        <View>
+          <Button title='Checkout' onPress={checkout} color={Color.black} />
         </View>
       </View>
     </SafeAreaView>
@@ -83,6 +90,7 @@ const CartItem = () => {
           style={styles.name}
           numberOfLines={1}
         />
+        <CustomText text='Size: M' style={styles.price} numberOfLines={1} />
         <View style={styles.priceCtn}>
           <CustomText text='20.000d' style={styles.price} />
 
@@ -106,11 +114,6 @@ const CartItem = () => {
 export default Cart;
 
 const styles = StyleSheet.create({
-  header: {
-    fontSize: 30,
-    fontFamily: "Poppins_600SemiBold",
-    alignSelf: "center",
-  },
   image: {
     width: 100,
     height: 100,
@@ -129,9 +132,9 @@ const styles = StyleSheet.create({
     color: Color.grey555555,
   },
   priceCtn: {
-    marginBottom: 10,
     flexDirection: "row",
     justifyContent: "space-between",
+    alignItems: "flex-end",
   },
   price: {
     fontSize: 18,
@@ -164,7 +167,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
   total: {
-    fontSize: 25,
+    fontSize: 22,
     fontFamily: "Poppins_600SemiBold",
   },
   totalPrice: {

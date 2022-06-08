@@ -30,7 +30,9 @@ const Input = ({
           },
         ]}
       >
-        <MaterialCommunityIcons name={iconName} style={styles.leftIcon} />
+        {iconName != null ? (
+          <MaterialCommunityIcons name={iconName} style={styles.leftIcon} />
+        ) : null}
         <TextInput
           autoCorrect={false}
           onFocus={() => {

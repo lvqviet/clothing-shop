@@ -29,7 +29,8 @@ const Home = ({ navigation }) => {
   const [categorySelected, setCategorySelected] = useState("All Products");
 
   const onClick = () => {
-    dispatch(actions.cart.add_cart(2));
+    // dispatch(actions.cart.add_cart(2));
+    navigation.navigate("REGISTER");
   };
 
   const onPressItem = () => {

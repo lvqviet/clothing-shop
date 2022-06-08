@@ -112,7 +112,7 @@ const Register = ({ navigation }) => {
             onFocus={() => handleError(null, "phone")}
             iconName='phone-outline'
             label='Phone Number'
-            placeholder='Enter your phone no'
+            placeholder='Enter your phone number'
             error={errors.phone}
           />
           <Input
