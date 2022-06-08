@@ -1,11 +1,14 @@
-import { cartActions, cartReducers } from './cart'
+import { cartActions, cartReducers } from "./cart";
+import { userActions, userReducers } from "./user";
 
 const actions = {
-	cart: cartActions,
-}
+  cart: cartActions,
+  user: userActions,
+};
 
 const reducers = {
-	cartReducers,
-}
+  cartReducers,
+  userReducers,
+};
 
-export { actions, reducers }
+export { actions, reducers };

@@ -1,9 +1,17 @@
 import React, { useState } from "react";
-import { Keyboard, SafeAreaView, StyleSheet, View } from "react-native";
-// import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Alert, Keyboard, SafeAreaView, StyleSheet, View } from "react-native";
+import { useDispatch } from "react-redux";
+import { authApi } from "../api";
+import { setNewToken } from "../api/api";
 import { Button, CustomText, Input, Loader } from "../components";
 import Color from "../constants/Color";
+import { actions } from "../redux";
+
+// import { toast } from "../helper";
 const LoginScreen = ({ navigation }) => {
+  const dispatch = useDispatch();
+  // const {login} = useSelector((state) => state.user);
+
   const [inputs, setInputs] = useState({ email: "", password: "" });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
@@ -14,10 +22,11 @@ const LoginScreen = ({ navigation }) => {
     if (!inputs.email) {
       handleError("Please input email", "email");
       isValid = false;
-    } else if (!inputs.email.match(/\S+@\S+\.\S+/)) {
-      handleError("Please input a valid email", "email");
-      isValid = false;
     }
+    // else if (!inputs.email.match(/\S+@\S+\.\S+/)) {
+    //   handleError("Please input a valid email", "email");
+    //   isValid = false;
+    // }
 
     if (!inputs.password) {
       handleError("Please input password", "password");
@@ -28,29 +37,28 @@ const LoginScreen = ({ navigation }) => {
     }
   };
 
-  const login = () => {
-    setLoading(true);
-    setTimeout(async () => {
+  const login = async () => {
+    try {
+      setLoading(true);
+      const response = await authApi.login({
+        username: inputs.email.trim().toLowerCase(),
+        password: inputs.password,
+      });
       setLoading(false);
-      // let userData = await AsyncStorage.getItem('userData');
-      // if (userData) {
-      //   userData = JSON.parse(userData);
-      //   if (
-      //     inputs.email == userData.email &&
-      //     inputs.password == userData.password
-      //   ) {
-      navigation.navigate("HOME");
-      //     AsyncStorage.setItem(
-      //       'userData',
-      //       JSON.stringify({...userData, loggedIn: true}),
-      //     );
-      //   } else {
-      //     Alert.alert('Error', 'Invalid Details');
-      //   }
-      // } else {
-      //   Alert.alert('Error', 'User does not exist');
-      // }
-    }, 2000);
+      console.log(response);
+      if (response.ok && response.data.access_token) {
+        const token = response.data.access_token;
+        if (token) {
+          setNewToken(token);
+          dispatch(actions.user.login());
+          navigation.navigate("HOME");
+        }
+      } else {
+        Alert.alert("username or password is incorrect");
+      }
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const handleOnchange = (text, input) => {

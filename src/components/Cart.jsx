@@ -1,12 +1,16 @@
 import Entypo from "@expo/vector-icons/Entypo";
 import React from "react";
 import { StyleSheet, View } from "react-native";
+import { useSelector } from "react-redux";
 import Color from "../constants/Color";
 import CustomText from "./CustomText";
 
 export default function Cart({ navigation }) {
+  const { isLogin } = useSelector((state) => state.user);
+
   function onPress() {
-    navigation.navigate("CART");
+    if (isLogin) navigation.navigate("CART");
+    else navigation.navigate("LOGIN");
   }
   return (
     <View style={styles.icon}>

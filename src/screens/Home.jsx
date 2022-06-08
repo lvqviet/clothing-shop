@@ -15,7 +15,7 @@ import { actions } from "../redux";
 
 const Home = ({ navigation }) => {
   const dispatch = useDispatch();
-  const cart = useSelector((state) => state.cart);
+  const { total } = useSelector((state) => state.cart);
 
   const categories = [
     "All Products",
@@ -29,8 +29,8 @@ const Home = ({ navigation }) => {
   const [categorySelected, setCategorySelected] = useState("All Products");
 
   const onClick = () => {
-    // dispatch(actions.cart.add_cart(2));
-    navigation.navigate("REGISTER");
+    dispatch(actions.cart.add_cart(2));
+    // navigation.navigate("REGISTER");
   };
 
   const onPressItem = () => {
@@ -91,7 +91,7 @@ const Home = ({ navigation }) => {
           </View>
 
           <CustomText text='Home Page' />
-          <CustomText text={cart.total} />
+          <CustomText text={total} />
 
           <Button title='test' onPress={onClick} />
         </View>

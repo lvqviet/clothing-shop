@@ -6,13 +6,15 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { useDispatch } from "react-redux";
 import { CustomText } from "../components";
 import Color from "../constants/Color";
+import { actions } from "../redux";
 
 const menuAccount = [
   { title: "My Account", screen: "ACCOUNT" },
-  { title: "Order Status", screen: "" },
-  { title: "Help", screen: "" },
+  { title: "Order Status", screen: "REGISTER" },
+  { title: "Logout", screen: "" },
 ];
 const Profile = ({ navigation }) => {
   return (
@@ -43,8 +45,13 @@ const Profile = ({ navigation }) => {
 };
 
 const MenuItem = ({ title, screen, navigation }) => {
+  const dispatch = useDispatch();
+
   function onPress() {
     if (screen != "") navigation.navigate(screen);
+    else {
+      dispatch(actions.user.logout());
+    }
   }
   return (
     <TouchableOpacity style={styles.menuItem} onPress={onPress}>
