@@ -1,5 +1,4 @@
 import Entypo from "@expo/vector-icons/Entypo";
-import React from "react";
 import { StyleSheet, View } from "react-native";
 import { useSelector } from "react-redux";
 import Color from "../constants/Color";
@@ -7,6 +6,7 @@ import CustomText from "./CustomText";
 
 export default function Cart({ navigation }) {
   const { isLogin } = useSelector((state) => state.user);
+  const { totalAmount } = useSelector((state) => state.cart);
 
   function onPress() {
     if (isLogin) navigation.navigate("CART");
@@ -16,7 +16,7 @@ export default function Cart({ navigation }) {
     <View style={styles.icon}>
       <Entypo name='shopping-cart' size={24} color='black' onPress={onPress} />
       <View style={styles.amountCtn}>
-        <CustomText text={"3"} style={styles.amount} />
+        <CustomText text={totalAmount} style={styles.amount} />
       </View>
     </View>
   );

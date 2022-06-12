@@ -1,4 +1,3 @@
-import React from "react";
 import {
   Dimensions,
   Image,
@@ -7,16 +6,14 @@ import {
   View,
 } from "react-native";
 import Color from "../constants/Color";
+import { format } from "../helper";
 import CustomText from "./CustomText";
 
 const width = Dimensions.get("window").width;
 
 const ProductItem = ({ title, price, onPress = () => {} }) => {
   return (
-    <TouchableOpacity
-      style={styles.container}
-      onPress={onPress}
-    >
+    <TouchableOpacity style={styles.container} onPress={onPress}>
       <Image
         source={require("../../assets/product.jpg")}
         resizeMode='contain'
@@ -24,7 +21,7 @@ const ProductItem = ({ title, price, onPress = () => {} }) => {
       />
       <View style={styles.info}>
         <CustomText text={title} style={styles.title} />
-        <CustomText text={`${price}đ`} style={styles.price} />
+        <CustomText text={format.currency(price)} style={styles.price} />
       </View>
     </TouchableOpacity>
   );

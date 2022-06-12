@@ -7,9 +7,13 @@ import {
 } from "@expo-google-fonts/poppins";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { Text, View } from "react-native";
+import { useEffect } from "react";
+import { Alert, Text, View } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import { Provider } from "react-redux";
+import { Provider, useDispatch } from "react-redux";
+import { setNewToken } from "./src/api/api";
+import { storage } from "./src/helper";
+import { actions } from "./src/redux";
 import store from "./src/redux/store";
 import {
   Account,
@@ -95,11 +99,33 @@ function App() {
     );
   }
 
+  const ProtectedRoute = ({ children }) => {
+    const dispatch = useDispatch();
+
+    useEffect(() => {
+      async function getToken() {
+        try {
+          const token = await storage.get("token");
+          if (token) {
+            setNewToken(token);
+            dispatch(actions.user.login());
+          }
+        } catch (error) {
+          Alert.alert("An error occurred");
+        }
+      }
+
+      getToken();
+    }, []);
+
+    return <Stack.Navigator>{children}</Stack.Navigator>;
+  };
+
   return (
     <Provider store={store}>
       <SafeAreaProvider>
         <NavigationContainer>
-          <Stack.Navigator>
+          <ProtectedRoute>
             {ProtectedRoutes.map((item) => (
               <Stack.Screen
                 key={item.name}
@@ -110,7 +136,7 @@ function App() {
                 }}
               />
             ))}
-          </Stack.Navigator>
+          </ProtectedRoute>
         </NavigationContainer>
       </SafeAreaProvider>
     </Provider>

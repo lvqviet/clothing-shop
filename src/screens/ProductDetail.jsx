@@ -1,17 +1,20 @@
-import {
-  StyleSheet,
-  Text,
-  View,
-  ScrollView,
-  SafeAreaView,
-  Image,
-  Dimensions,
-} from "react-native";
-import React, { useState } from "react";
-import { Button, CustomText, Header } from "../components";
-import DropDownPicker from "react-native-dropdown-picker";
-import Color from "../constants/Color";
 import { Feather } from "@expo/vector-icons";
+import { useEffect, useState } from "react";
+import {
+  Alert,
+  Dimensions,
+  Image,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import DropDownPicker from "react-native-dropdown-picker";
+import { productApi } from "../api";
+import { Button, CustomText, Header, Loader } from "../components";
+import Color from "../constants/Color";
+import { format } from "../helper";
 
 const IMAGES = [
   {
@@ -34,16 +37,52 @@ const IMAGES = [
 
 const height = Dimensions.get("window").height;
 
-const ProductDetail = ({ navigation }) => {
+const ProductDetail = ({ navigation, route }) => {
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState(null);
-  const [items, setItems] = useState([
-    { label: "Apple", value: "apple" },
-    { label: "Banana", value: "banana" },
-  ]);
+  const [listSize, setListSize] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [product, setProduct] = useState();
+  const [amount, setAmount] = useState(1);
+
+  const { id } = route.params;
+
+  const increase = () => {
+    setAmount(amount + 1);
+  };
+  const decrease = () => {
+    if (amount > 1) setAmount(amount - 1);
+  };
+
+  useEffect(() => {
+    async function getProduct() {
+      try {
+        setIsLoading(true);
+        const response = await productApi.getById(id);
+        setIsLoading(false);
+        if (response.ok && response.data) {
+          setProduct(response.data[0]);
+
+          const listSize = response.data[0].productInfo.map((e) => ({
+            label: e.size,
+            value: e.size,
+            origin: e,
+          }));
+          setListSize(listSize);
+        } else {
+          Alert.alert(response.data.message);
+        }
+      } catch (error) {
+        Alert.alert("An error occurred");
+      }
+    }
+
+    getProduct();
+  }, []);
 
   return (
     <SafeAreaView style={styles.container}>
+      <Loader visible={isLoading} />
       <Header navigation={navigation} showBackButton={true} />
       <ScrollView style={styles.scrollCtn}>
         <View style={styles.preview}>
@@ -64,63 +103,73 @@ const ProductDetail = ({ navigation }) => {
           </View>
         </View>
 
-        <View style={styles.content}>
-          <CustomText text='Lightweight Jacket' style={styles.name} />
-          <CustomText text={`${100000}đ`} style={styles.price} />
-          <CustomText
-            text={
-              "Nulla eget sem vitae eros pharetra viverra. Nam vitae luctus ligula. Mauris consequat ornare feugiat."
-            }
-            style={styles.description}
-          />
+        {product ? (
+          <View style={styles.content}>
+            <CustomText text={product.productname} style={styles.name} />
+            <CustomText
+              text={format.currency(product.price)}
+              style={styles.price}
+            />
+            <CustomText text={product.preview} style={styles.description} />
 
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              marginTop: 20,
-              zIndex: 100,
-            }}
-          >
-            <CustomText text='Size' style={styles.option} />
-            <DropDownPicker
-              open={open}
-              value={value}
-              items={items}
-              setOpen={setOpen}
-              setValue={setValue}
-              setItems={setItems}
+            <View
               style={{
-                borderRadius: 1,
-                borderColor: Color.greye6e6e6,
-                maxWidth: 250,
+                flexDirection: "row",
+                alignItems: "center",
+                marginTop: 20,
+                zIndex: 100,
               }}
-              disableBorderRadius={true}
-              containerStyle={{
-                width: 250,
-              }}
-            />
-          </View>
+            >
+              <CustomText text='Size' style={styles.option} />
+              <DropDownPicker
+                open={open}
+                value={value}
+                items={listSize}
+                setOpen={setOpen}
+                setValue={setValue}
+                setItems={setListSize}
+                style={{
+                  borderRadius: 1,
+                  borderColor: Color.greye6e6e6,
+                  maxWidth: 250,
+                }}
+                disableBorderRadius={true}
+                containerStyle={{
+                  width: 250,
+                }}
+              />
+            </View>
 
-          <View style={styles.quantityCtn}>
-            <View style={styles.adjust}>
-              <Feather name='plus' size={18} color='black' />
-            </View>
-            <View style={styles.amountCtn}>
-              <CustomText text={1} style={styles.amount} />
-            </View>
-            <View style={styles.adjust}>
-              <Feather name='minus' size={18} color='black' />
-            </View>
-          </View>
+            {value != null ? (
+              <CustomText
+                text={`Kho: ${
+                  listSize[listSize.findIndex((e) => e.value == value)].origin
+                    .amount
+                }`}
+                style={{ marginLeft: 80, marginTop: 10, fontSize: 14 }}
+              />
+            ) : null}
 
-          <View style={styles.button}>
-            <Button
-              title={"Add to cart".toUpperCase()}
-              onPress={() => console.log("added")}
-            />
+            <View style={styles.quantityCtn}>
+              <TouchableOpacity style={styles.adjust} onPress={decrease}>
+                <Feather name='minus' size={18} color='black' />
+              </TouchableOpacity>
+              <View style={styles.amountCtn}>
+                <CustomText text={amount} style={styles.amount} />
+              </View>
+              <TouchableOpacity style={styles.adjust} onPress={increase}>
+                <Feather name='plus' size={18} color='black' />
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.button}>
+              <Button
+                title={"Add to cart".toUpperCase()}
+                onPress={() => console.log("added")}
+              />
+            </View>
           </View>
-        </View>
+        ) : null}
       </ScrollView>
     </SafeAreaView>
   );

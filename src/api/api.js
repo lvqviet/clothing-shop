@@ -1,12 +1,14 @@
 import { create } from "apisauce";
 
-const baseURL = "https://ecommerce-back-end-spring-boot.herokuapp.com/api/v1";
+const baseURL = "https://clothingshop-api.herokuapp.com";
 
 const api = create({ baseURL });
 
 export const setNewToken = (token) => {
+  console.log("============TOKEN===========");
+  console.log(token);
   if (token) {
-    api.setHeader("Authorization", "Bearer" + token);
+    api.setHeader("Authorization", "Bearer " + token);
   } else {
     api.deleteHeader("Authorization");
   }

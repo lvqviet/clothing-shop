@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
-import React, { useState } from "react";
+import { useEffect, useState } from "react";
 import {
+  Alert,
   SafeAreaView,
   ScrollView,
   StyleSheet,
@@ -9,13 +10,20 @@ import {
   View,
 } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
-import { Banner, Button, CustomText, Header, ProductItem } from "../components";
+import { productApi } from "../api";
+import {
+  Banner,
+  Button,
+  CustomText,
+  Header,
+  Loader,
+  ProductItem,
+} from "../components";
 import Color from "../constants/Color";
-import { actions } from "../redux";
 
 const Home = ({ navigation }) => {
-  const dispatch = useDispatch();
-  const { total } = useSelector((state) => state.cart);
+  const { totalAmount } = useSelector((state) => state.cart);
+  const { isLogin } = useSelector((state) => state.user);
 
   const categories = [
     "All Products",
@@ -27,18 +35,49 @@ const Home = ({ navigation }) => {
   ];
 
   const [categorySelected, setCategorySelected] = useState("All Products");
+  const [isLoading, setIsLoading] = useState(false);
+  const [products, setProducts] = useState([]);
+  const [productTypes, setProductTypes] = useState([]);
 
   const onClick = () => {
-    dispatch(actions.cart.add_cart(2));
-    // navigation.navigate("REGISTER");
+    // dispatch(actions.cart.add_cart(2));
+    getProducts();
   };
 
-  const onPressItem = () => {
-    navigation.navigate("PRODUCT_DETAIL");
+  const onPressItem = (id) => {
+    navigation.navigate("PRODUCT_DETAIL", { id });
   };
+
+  async function getProducts() {
+    try {
+      setIsLoading(true);
+      const response = await productApi.getProducts();
+      setIsLoading(false);
+      if (response.ok && response.data.product) {
+        const products = response.data.product;
+        setProducts(products);
+
+        const listTypes = new Set();
+        listTypes.add("All Products");
+        for (let i = 0; i < products.length; i++) {
+          listTypes.add(products[i].productType);
+        }
+        setProductTypes(Array.from(listTypes));
+      } else {
+        Alert.alert(response.data.message);
+      }
+    } catch (error) {
+      Alert.alert("An error occurred");
+    }
+  }
+
+  useEffect(() => {
+    if (isLogin == true) getProducts();
+  }, [isLogin]);
 
   return (
     <SafeAreaView style={styles.container}>
+      <Loader visible={isLoading} />
       <Header navigation={navigation} />
       <ScrollView style={styles.scrollCtn}>
         <View style={styles.content}>
@@ -49,26 +88,28 @@ const Home = ({ navigation }) => {
               text={"Product Overview".toUpperCase()}
               style={styles.overviewText}
             />
-            <View style={styles.categories}>
-              {categories.map((item, index) => (
-                <CustomText
-                  text={item}
-                  key={index}
-                  onPress={() => setCategorySelected(item)}
-                  style={[
-                    styles.category,
-                    {
-                      textDecorationLine:
-                        categorySelected == item ? "underline" : "none",
-                      color:
-                        categorySelected == item
-                          ? Color.text
-                          : Color.grey999999,
-                    },
-                  ]}
-                />
-              ))}
-            </View>
+            {productTypes ? (
+              <View style={styles.categories}>
+                {productTypes.map((item, index) => (
+                  <CustomText
+                    text={item}
+                    key={index}
+                    onPress={() => setCategorySelected(item)}
+                    style={[
+                      styles.category,
+                      {
+                        textDecorationLine:
+                          categorySelected == item ? "underline" : "none",
+                        color:
+                          categorySelected == item
+                            ? Color.text
+                            : Color.grey999999,
+                      },
+                    ]}
+                  />
+                ))}
+              </View>
+            ) : null}
 
             <TouchableOpacity
               style={styles.filter}
@@ -80,18 +121,24 @@ const Home = ({ navigation }) => {
           </View>
 
           <View style={styles.listProduct}>
-            {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((e, index) => (
-              <ProductItem
-                key={index}
-                title='Product Name'
-                price={100000}
-                onPress={onPressItem}
-              />
-            ))}
+            {products
+              .filter((e) => {
+                if (categorySelected === "All Products") return true;
+                else {
+                  return e.productType == categorySelected;
+                }
+              })
+              .map((item, index) => (
+                <ProductItem
+                  key={index}
+                  title={item.productname}
+                  price={item.price}
+                  onPress={() => onPressItem(item._id)}
+                />
+              ))}
           </View>
 
-          <CustomText text='Home Page' />
-          <CustomText text={total} />
+          <CustomText text={totalAmount} />
 
           <Button title='test' onPress={onClick} />
         </View>
@@ -139,7 +186,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   category: {
-    marginRight: 20,
+    marginRight: 15,
     fontSize: 16,
   },
   filter: {

@@ -6,13 +6,13 @@ export default {
     return value !== null ? JSON.parse(value) : null;
   },
 
-  getAllKeys: () => AsyncStorage.getAllKeys(),
+  getAllKeys: async () => AsyncStorage.getAllKeys(),
 
-  set: (key, value) => AsyncStorage.setItem(key, JSON.stringify(value)),
+  set: async (key, value) => AsyncStorage.setItem(key, JSON.stringify(value)),
 
-  remove: (key) => AsyncStorage.removeItem(key),
+  remove: async (key) => AsyncStorage.removeItem(key),
 
-  clear: () => AsyncStorage.clear(),
+  clear: async () => AsyncStorage.clear(),
 
   clearWithout: async (args = []) => {
     const allKeys = await AsyncStorage.getAllKeys();

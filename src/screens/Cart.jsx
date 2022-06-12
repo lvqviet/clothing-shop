@@ -96,13 +96,13 @@ const CartItem = () => {
 
           <View style={styles.quantityCtn}>
             <View style={styles.adjust}>
-              <Feather name='plus' size={18} color='black' />
+              <Feather name='minus' size={18} color='black' />
             </View>
             <View style={styles.amountCtn}>
               <CustomText text={1} style={styles.amount} />
             </View>
             <View style={styles.adjust}>
-              <Feather name='minus' size={18} color='black' />
+              <Feather name='plus' size={18} color='black' />
             </View>
           </View>
         </View>
