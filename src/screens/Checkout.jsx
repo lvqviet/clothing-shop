@@ -10,12 +10,12 @@ import {
 } from "react-native";
 import { Button, CustomText, Header, Input, Loader } from "../components";
 import Color from "../constants/Color";
+import { format } from "../helper";
 
 const width = Dimensions.get("screen").width;
 
 const Checkout = ({ navigation }) => {
   const [inputs, setInputs] = React.useState({
-    email: "",
     name: "",
     phone: "",
     address: "",
@@ -34,14 +34,6 @@ const Checkout = ({ navigation }) => {
   const validate = () => {
     Keyboard.dismiss();
     let isValid = true;
-
-    if (!inputs.email) {
-      handleError("Please input email", "email");
-      isValid = false;
-    } else if (!inputs.email.match(/\S+@\S+\.\S+/)) {
-      handleError("Please input a valid email", "email");
-      isValid = false;
-    }
 
     if (!inputs.name) {
       handleError("Please input name", "name");
@@ -75,14 +67,6 @@ const Checkout = ({ navigation }) => {
       />
       <ScrollView style={{ marginTop: 45 }}>
         <View style={{ marginVertical: 10, marginHorizontal: 15 }}>
-          <Input
-            onChangeText={(text) => handleOnchange(text, "email")}
-            onFocus={() => handleError(null, "email")}
-            label='Email'
-            placeholder='Enter your email address'
-            error={errors.email}
-          />
-
           <Input
             onChangeText={(text) => handleOnchange(text, "name")}
             onFocus={() => handleError(null, "name")}
@@ -159,7 +143,7 @@ const CartItem = () => {
         />
         <CustomText text='Size: M' style={styles.price} numberOfLines={1} />
         <View style={styles.priceCtn}>
-          <CustomText text='20.000d' style={styles.price} />
+          <CustomText text={format.currency(200000)} style={styles.price} />
           <CustomText text='x 2' style={styles.price} />
         </View>
       </View>

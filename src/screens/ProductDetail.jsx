@@ -11,10 +11,12 @@ import {
   View,
 } from "react-native";
 import DropDownPicker from "react-native-dropdown-picker";
+import { useDispatch, useSelector } from "react-redux";
 import { productApi } from "../api";
 import { Button, CustomText, Header, Loader } from "../components";
 import Color from "../constants/Color";
 import { format } from "../helper";
+import { actions } from "../redux";
 
 const IMAGES = [
   {
@@ -46,12 +48,32 @@ const ProductDetail = ({ navigation, route }) => {
   const [amount, setAmount] = useState(1);
 
   const { id } = route.params;
+  const { isLogin } = useSelector((state) => state.user);
+
+  const dispatch = useDispatch();
 
   const increase = () => {
-    setAmount(amount + 1);
+    if (
+      amount <
+      listSize[listSize.findIndex((e) => e.value == value)].origin.amount
+    )
+      setAmount(amount + 1);
   };
   const decrease = () => {
     if (amount > 1) setAmount(amount - 1);
+  };
+
+  const addToCart = () => {
+    if (!value) {
+      Alert.alert("Please select size of item");
+      return;
+    }
+    if (!isLogin) {
+      navigation.navigate("LOGIN");
+      return;
+    }
+
+    dispatch(actions.cart.add_cart({ product, amount, size: value }));
   };
 
   useEffect(() => {
@@ -84,7 +106,7 @@ const ProductDetail = ({ navigation, route }) => {
     <SafeAreaView style={styles.container}>
       <Loader visible={isLoading} />
       <Header navigation={navigation} showBackButton={true} />
-      <ScrollView style={styles.scrollCtn}>
+      <View style={styles.scrollCtn}>
         <View style={styles.preview}>
           <ScrollView style={styles.listImages}>
             {IMAGES.map((item, index) => (
@@ -163,14 +185,11 @@ const ProductDetail = ({ navigation, route }) => {
             </View>
 
             <View style={styles.button}>
-              <Button
-                title={"Add to cart".toUpperCase()}
-                onPress={() => console.log("added")}
-              />
+              <Button title={"Add to cart".toUpperCase()} onPress={addToCart} />
             </View>
           </View>
         ) : null}
-      </ScrollView>
+      </View>
     </SafeAreaView>
   );
 };

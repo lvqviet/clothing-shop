@@ -1,17 +1,13 @@
-import {
-  StyleSheet,
-  Text,
-  View,
-  SafeAreaView,
-  ScrollView,
-  Keyboard,
-} from "react-native";
 import React from "react";
-import { Header, Input, Button, CustomText } from "../components";
+import { Keyboard, SafeAreaView, StyleSheet, View } from "react-native";
+import { useSelector } from "react-redux";
+import { Button, CustomText, Header, Input } from "../components";
 
 const Account = ({ navigation }) => {
+  const { email, userName } = useSelector((state) => state.user);
+
   const [inputs, setInputs] = React.useState({
-    fullname: "Test Lee",
+    fullname: userName,
     phone: "0999123456",
   });
   const [errors, setErrors] = React.useState({});
@@ -68,7 +64,7 @@ const Account = ({ navigation }) => {
             <Input
               iconName='email-outline'
               label='Email'
-              value='test123@gmail.com'
+              value={email}
               editable={false}
             />
 

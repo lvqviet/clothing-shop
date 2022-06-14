@@ -9,40 +9,16 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { useDispatch, useSelector } from "react-redux";
 import { productApi } from "../api";
-import {
-  Banner,
-  Button,
-  CustomText,
-  Header,
-  Loader,
-  ProductItem,
-} from "../components";
+import { Banner, CustomText, Header, Loader, ProductItem } from "../components";
 import Color from "../constants/Color";
 
 const Home = ({ navigation }) => {
-  const { totalAmount } = useSelector((state) => state.cart);
-  const { isLogin } = useSelector((state) => state.user);
-
-  const categories = [
-    "All Products",
-    "Women",
-    "Men",
-    "Bag",
-    "Shoes",
-    "Watches",
-  ];
-
   const [categorySelected, setCategorySelected] = useState("All Products");
   const [isLoading, setIsLoading] = useState(false);
   const [products, setProducts] = useState([]);
   const [productTypes, setProductTypes] = useState([]);
-
-  const onClick = () => {
-    // dispatch(actions.cart.add_cart(2));
-    getProducts();
-  };
+  const [lowToHigh, setLowToHigh] = useState(false);
 
   const onPressItem = (id) => {
     navigation.navigate("PRODUCT_DETAIL", { id });
@@ -72,8 +48,8 @@ const Home = ({ navigation }) => {
   }
 
   useEffect(() => {
-    if (isLogin == true) getProducts();
-  }, [isLogin]);
+    getProducts();
+  }, []);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -116,7 +92,9 @@ const Home = ({ navigation }) => {
               onPress={() => console.log("cc")}
             >
               <Ionicons name='ios-filter' size={20} color={Color.text} />
-              <Text style={styles.textFilter}>Filter</Text>
+              <Text style={styles.textFilter}>
+                {lowToHigh ? "Low to High" : "High to Low"}
+              </Text>
             </TouchableOpacity>
           </View>
 
@@ -137,10 +115,6 @@ const Home = ({ navigation }) => {
                 />
               ))}
           </View>
-
-          <CustomText text={totalAmount} />
-
-          <Button title='test' onPress={onClick} />
         </View>
       </ScrollView>
     </SafeAreaView>

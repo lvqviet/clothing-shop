@@ -15,7 +15,7 @@ import { actions } from "../redux";
 const menuProfileAuth = [
   { title: "My Account", screen: "ACCOUNT" },
   { title: "Order Status", screen: "" },
-  { title: "Logout", screen: "" },
+  { title: "Log Out", screen: "" },
 ];
 
 const menuProfile = [
@@ -71,17 +71,24 @@ const Profile = ({ navigation }) => {
 const MenuItem = ({ title, screen, navigation }) => {
   const dispatch = useDispatch();
 
-  function onPress() {
+  async function onPress() {
     if (screen != "") navigation.navigate(screen);
     else {
       dispatch(actions.user.logout());
       setNewToken();
-      storage.remove("token");
+      await storage.clear();
     }
   }
   return (
     <TouchableOpacity style={styles.menuItem} onPress={onPress}>
-      <CustomText text={title} style={styles.title} onPress={onPress} />
+      <CustomText
+        text={title}
+        style={[
+          styles.title,
+          { color: title === "Log Out" ? Color.error : Color.text },
+        ]}
+        onPress={onPress}
+      />
     </TouchableOpacity>
   );
 };

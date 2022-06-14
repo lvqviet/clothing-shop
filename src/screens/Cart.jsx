@@ -1,16 +1,15 @@
+import { Feather } from "@expo/vector-icons";
 import {
-  StyleSheet,
-  Text,
-  View,
-  SafeAreaView,
-  Image,
-  ScrollView,
   Dimensions,
+  Image,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  View,
 } from "react-native";
-import React from "react";
 import { Button, CustomText, Header } from "../components";
 import Color from "../constants/Color";
-import { Feather } from "@expo/vector-icons";
+import { format } from "../helper";
 
 const width = Dimensions.get("screen").width;
 const Cart = ({ navigation }) => {
@@ -92,7 +91,7 @@ const CartItem = () => {
         />
         <CustomText text='Size: M' style={styles.price} numberOfLines={1} />
         <View style={styles.priceCtn}>
-          <CustomText text='20.000d' style={styles.price} />
+          <CustomText text={format.currency(200000)} style={styles.price} />
 
           <View style={styles.quantityCtn}>
             <View style={styles.adjust}>

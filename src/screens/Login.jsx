@@ -45,11 +45,20 @@ const LoginScreen = ({ navigation }) => {
       });
       setLoading(false);
       if (response.ok && response.data.accessToken) {
-        const token = response.data.accessToken;
-        if (token) {
-          await storage.set("token", token);
-          setNewToken(token);
-          dispatch(actions.user.login());
+        const { accessToken } = response.data;
+        const { id, email, avatar, username } = response.data.userData;
+        if (accessToken) {
+          await storage.set("token", accessToken);
+          await storage.set("userId", id);
+          setNewToken(accessToken);
+          dispatch(
+            actions.user.login({
+              id: id,
+              email: email,
+              avatar: avatar,
+              userName: username,
+            })
+          );
           navigation.navigate("HOME");
         }
       } else {

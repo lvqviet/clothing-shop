@@ -2,7 +2,7 @@ import api from "./api";
 import API_CONSTANTS from "./constants";
 
 export default {
-  getMe: () => api.get(API_CONSTANTS.USER.ME),
+  getMe: (id) => api.get(API_CONSTANTS.USER.GET_BY_ID(id)),
 
   changePassword: (params) =>
     api.post(API_CONSTANTS.USER.CHANGE_PASSWORD, params),

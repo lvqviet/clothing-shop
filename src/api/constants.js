@@ -6,7 +6,7 @@ const API_CONSTANTS = {
     RESET_PASSWORD: (id) => `auth/reset-password/${id}`,
   },
   USER: {
-    GET_BY_ID: (id) => `users${id}`,
+    GET_BY_ID: (id) => `users/${id}`,
     CHANGE_PASSWORD: "auth/changePassword",
   },
   PRODUCT: {
