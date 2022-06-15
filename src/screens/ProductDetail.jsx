@@ -73,7 +73,7 @@ const ProductDetail = ({ navigation, route }) => {
       return;
     }
 
-    dispatch(actions.cart.add_cart({ product, amount, size: value }));
+    dispatch(actions.cart.add_to_cart({ product, amount, size: value }));
   };
 
   useEffect(() => {

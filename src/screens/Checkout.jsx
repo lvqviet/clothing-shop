@@ -8,6 +8,7 @@ import {
   StyleSheet,
   View,
 } from "react-native";
+import { useSelector } from "react-redux";
 import { Button, CustomText, Header, Input, Loader } from "../components";
 import Color from "../constants/Color";
 import { format } from "../helper";
@@ -15,6 +16,10 @@ import { format } from "../helper";
 const width = Dimensions.get("screen").width;
 
 const Checkout = ({ navigation }) => {
+  const { products, totalPrice, totalAmount } = useSelector(
+    (state) => state.cart
+  );
+
   const [inputs, setInputs] = React.useState({
     name: "",
     phone: "",
@@ -92,13 +97,9 @@ const Checkout = ({ navigation }) => {
           />
         </View>
 
-        <CartItem />
-        <CartItem />
-        <CartItem />
-        <CartItem />
-        <CartItem />
-        <CartItem />
-        <CartItem />
+        {products.map((item, index) => (
+          <CartItem key={index} item={item} />
+        ))}
       </ScrollView>
       <View style={{ paddingHorizontal: 15 }}>
         <View
@@ -107,8 +108,32 @@ const Checkout = ({ navigation }) => {
             justifyContent: "space-between",
           }}
         >
-          <CustomText text='Total(7):' style={styles.total} />
-          <CustomText text='146.000d' style={styles.total} />
+          <CustomText text='Subtotal:' style={[styles.totalPrice]} />
+          <CustomText
+            text={format.currency(totalPrice)}
+            style={styles.totalPrice}
+          />
+        </View>
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+          }}
+        >
+          <CustomText text='Shipping:' style={[styles.totalPrice]} />
+          <CustomText text={format.currency(23000)} style={styles.totalPrice} />
+        </View>
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+          }}
+        >
+          <CustomText text={`Total(${totalAmount})`} style={styles.total} />
+          <CustomText
+            text={format.currency(totalPrice + 23000)}
+            style={styles.total}
+          />
         </View>
         <View>
           <Button
@@ -122,7 +147,7 @@ const Checkout = ({ navigation }) => {
   );
 };
 
-const CartItem = () => {
+const CartItem = ({ item }) => {
   return (
     <View style={styles.cartItem}>
       <Image
@@ -137,14 +162,18 @@ const CartItem = () => {
         }}
       >
         <CustomText
-          text='Fresh Strawberries Fresh Strawberries Fresh Strawberries Fresh Strawberries'
+          text={item.product.productname}
           style={styles.name}
           numberOfLines={1}
         />
-        <CustomText text='Size: M' style={styles.price} numberOfLines={1} />
+        <CustomText
+          text={`Size: ${item.size}`}
+          style={styles.price}
+          numberOfLines={1}
+        />
         <View style={styles.priceCtn}>
           <CustomText text={format.currency(200000)} style={styles.price} />
-          <CustomText text='x 2' style={styles.price} />
+          <CustomText text={`x ${item.amount}`} style={styles.price} />
         </View>
       </View>
     </View>
@@ -172,6 +201,7 @@ const styles = StyleSheet.create({
     color: Color.grey555555,
   },
   priceCtn: {
+    width: "100%",
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-end",
@@ -183,5 +213,10 @@ const styles = StyleSheet.create({
   total: {
     fontSize: 22,
     fontFamily: "Poppins_600SemiBold",
+  },
+  totalPrice: {
+    fontSize: 20,
+    fontFamily: "Poppins_500Medium",
+    color: Color.grey555555,
   },
 });

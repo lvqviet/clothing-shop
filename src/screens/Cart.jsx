@@ -1,4 +1,4 @@
-import { Feather } from "@expo/vector-icons";
+import { Feather, Ionicons } from "@expo/vector-icons";
 import {
   Dimensions,
   Image,
@@ -7,12 +7,32 @@ import {
   StyleSheet,
   View,
 } from "react-native";
+import { useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
 import { Button, CustomText, Header } from "../components";
 import Color from "../constants/Color";
 import { format } from "../helper";
+import { actions } from "../redux";
 
 const width = Dimensions.get("screen").width;
 const Cart = ({ navigation }) => {
+  const { products, totalPrice, totalAmount } = useSelector(
+    (state) => state.cart
+  );
+
+  const dispatch = useDispatch();
+
+  function deleteItem(item) {
+    dispatch(actions.cart.delete_item({ item }));
+  }
+
+  function increaseAmount(item) {
+    dispatch(actions.cart.increase_amount({ item }));
+  }
+  function decreaseAmount(item) {
+    dispatch(actions.cart.decrease_amount({ item }));
+  }
+
   function checkout() {
     navigation.navigate("CHECKOUT");
   }
@@ -25,14 +45,16 @@ const Cart = ({ navigation }) => {
         showBackButton={true}
         showCartIcon={false}
       />
-      <ScrollView style={{ marginTop: 45 }}>
-        <CartItem />
-        <CartItem />
-        <CartItem />
-        <CartItem />
-        <CartItem />
-        <CartItem />
-        <CartItem />
+      <ScrollView style={{ marginTop: 45, paddingTop: 10 }}>
+        {products.map((item, index) => (
+          <CartItem
+            item={item}
+            key={index}
+            onDelete={() => deleteItem(item)}
+            increaseAmount={() => increaseAmount(item)}
+            decreaseAmount={() => decreaseAmount(item)}
+          />
+        ))}
       </ScrollView>
       <View style={{ paddingHorizontal: 15 }}>
         <View
@@ -41,67 +63,81 @@ const Cart = ({ navigation }) => {
             justifyContent: "space-between",
           }}
         >
-          <CustomText text='Subtotal:' style={[styles.totalPrice]} />
-          <CustomText text='123.000d' style={styles.totalPrice} />
-        </View>
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "space-between",
-          }}
-        >
-          <CustomText text='Shipping:' style={[styles.totalPrice]} />
-          <CustomText text='23.000d' style={styles.totalPrice} />
-        </View>
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "space-between",
-          }}
-        >
-          <CustomText text='Total(7)' style={styles.total} />
-          <CustomText text='146.000d' style={styles.total} />
+          <CustomText text={`Total(${totalAmount})`} style={styles.total} />
+          <CustomText text={format.currency(totalPrice)} style={styles.total} />
         </View>
         <View>
-          <Button title='Checkout' onPress={checkout} color={Color.black} />
+          <Button
+            title='Checkout'
+            disabled={products.length == 0}
+            onPress={checkout}
+            color={products.length > 0 ? Color.black : Color.grey999999}
+          />
         </View>
       </View>
     </SafeAreaView>
   );
 };
 
-const CartItem = () => {
+const CartItem = ({ item, onDelete, increaseAmount, decreaseAmount }) => {
   return (
     <View style={styles.cartItem}>
+      <Ionicons
+        name='close'
+        size={24}
+        color={Color.black}
+        style={styles.close}
+        onPress={onDelete}
+      />
       <Image
         source={require("../../assets/product.jpg")}
         style={styles.image}
       />
       <View
         style={{
-          maxWidth: width - 130,
+          maxWidth: width - 120,
           paddingHorizontal: 10,
           justifyContent: "space-between",
         }}
       >
-        <CustomText
-          text='Fresh Strawberries Fresh Strawberries Fresh Strawberries Fresh Strawberries'
-          style={styles.name}
-          numberOfLines={1}
-        />
-        <CustomText text='Size: M' style={styles.price} numberOfLines={1} />
+        <View style={{ maxWidth: "90%" }}>
+          <CustomText
+            text={item.product.productname}
+            style={styles.name}
+            numberOfLines={1}
+          />
+          <CustomText
+            text={`Size: ${item.size}`}
+            style={styles.price}
+            numberOfLines={1}
+          />
+        </View>
+
         <View style={styles.priceCtn}>
-          <CustomText text={format.currency(200000)} style={styles.price} />
+          <CustomText
+            text={format.currency(item.product.price)}
+            style={styles.price}
+          />
 
           <View style={styles.quantityCtn}>
             <View style={styles.adjust}>
-              <Feather name='minus' size={18} color='black' />
+              <Feather
+                name='minus'
+                size={18}
+                color='black'
+                onPress={decreaseAmount}
+              />
             </View>
             <View style={styles.amountCtn}>
-              <CustomText text={1} style={styles.amount} />
+              <CustomText text={item.amount} style={styles.amount} />
             </View>
             <View style={styles.adjust}>
-              <Feather name='plus' size={18} color='black' />
+              <Feather
+                name='plus'
+                size={18}
+                color='black'
+                onPress={increaseAmount}
+              />
             </View>
           </View>
         </View>
@@ -131,6 +167,7 @@ const styles = StyleSheet.create({
     color: Color.grey555555,
   },
   priceCtn: {
+    width: "100%",
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-end",
@@ -173,5 +210,11 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontFamily: "Poppins_500Medium",
     color: Color.grey555555,
+  },
+  close: {
+    position: "absolute",
+    top: -10,
+    right: 0,
+    zIndex: 1000,
   },
 });
