@@ -46,7 +46,8 @@ const LoginScreen = ({ navigation }) => {
       setLoading(false);
       if (response.ok && response.data.accessToken) {
         const { accessToken } = response.data;
-        const { id, email, avatar, username } = response.data.userData;
+        const { id, email, avatar, username, fullname } =
+          response.data.userData;
         if (accessToken) {
           await storage.set("token", accessToken);
           await storage.set("userId", id);
@@ -57,9 +58,10 @@ const LoginScreen = ({ navigation }) => {
               email: email,
               avatar: avatar,
               userName: username,
+              fullName: fullname ?? "",
             })
           );
-          navigation.navigate("HOME");
+          navigation.goBack();
         }
       } else {
         Alert.alert(response.data.message);

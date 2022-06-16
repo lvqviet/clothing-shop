@@ -1,7 +1,7 @@
 const API_CONSTANTS = {
   AUTH: {
     LOGIN: "auth/signin",
-    REGISTER: "user",
+    REGISTER: "signup",
     FORGOT_PASSWORD: "auth/forgot-password",
     RESET_PASSWORD: (id) => `auth/reset-password/${id}`,
   },
@@ -13,6 +13,11 @@ const API_CONSTANTS = {
     GET: (page = 0, pageSize = 10) =>
       `product?pageNumber=${page}&pageSize=${pageSize}`,
     GET_BY_ID: (id) => `product/${id}`,
+  },
+  CART: {
+    GET: (id) => `cart/get-by-userId/${id}`,
+    CREATE: "cart",
+    UPDATE: (id) => `cart/${id}`,
   },
 };
 

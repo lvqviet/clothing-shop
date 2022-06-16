@@ -9,9 +9,12 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { productApi } from "../api";
+import { useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
+import { cartApi, productApi } from "../api";
 import { Banner, CustomText, Header, Loader, ProductItem } from "../components";
 import Color from "../constants/Color";
+import { actions } from "../redux";
 
 const Home = ({ navigation }) => {
   const [categorySelected, setCategorySelected] = useState("All Products");
@@ -19,6 +22,9 @@ const Home = ({ navigation }) => {
   const [products, setProducts] = useState([]);
   const [productTypes, setProductTypes] = useState([]);
   const [lowToHigh, setLowToHigh] = useState(false);
+
+  const { id, isLogin } = useSelector((state) => state.user);
+  const dispatch = useDispatch();
 
   const onPressItem = (id) => {
     navigation.navigate("PRODUCT_DETAIL", { id });
@@ -47,9 +53,26 @@ const Home = ({ navigation }) => {
     }
   }
 
+  async function getCart() {
+    try {
+      const response = await cartApi.get(id);
+      if (response.ok) {
+        dispatch(actions.cart.get_cart(response.data));
+      } else {
+        Alert.alert(response.data.message);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
   useEffect(() => {
     getProducts();
   }, []);
+
+  useEffect(() => {
+    if (isLogin) getCart();
+  }, [isLogin]);
 
   return (
     <SafeAreaView style={styles.container}>

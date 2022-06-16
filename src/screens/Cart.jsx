@@ -1,5 +1,7 @@
 import { Feather, Ionicons } from "@expo/vector-icons";
+import { useState } from "react";
 import {
+  Alert,
   Dimensions,
   Image,
   SafeAreaView,
@@ -9,18 +11,20 @@ import {
 } from "react-native";
 import { useDispatch } from "react-redux";
 import { useSelector } from "react-redux";
-import { Button, CustomText, Header } from "../components";
+import { cartApi } from "../api";
+import { Button, CustomText, Header, Loader } from "../components";
 import Color from "../constants/Color";
 import { format } from "../helper";
 import { actions } from "../redux";
 
 const width = Dimensions.get("screen").width;
 const Cart = ({ navigation }) => {
-  const { products, totalPrice, totalAmount } = useSelector(
+  const { products, totalPrice, totalAmount, id } = useSelector(
     (state) => state.cart
   );
-
   const dispatch = useDispatch();
+
+  const [isLoading, setIsLoading] = useState(false);
 
   function deleteItem(item) {
     dispatch(actions.cart.delete_item({ item }));
@@ -37,8 +41,33 @@ const Cart = ({ navigation }) => {
     navigation.navigate("CHECKOUT");
   }
 
+  async function updateCart() {
+    try {
+      setIsLoading(true);
+      const genProducts = products.map((item) => {
+        return {
+          productId: item.product._id,
+          amount: item.amount,
+          size: item.size,
+        };
+      });
+      const params = { detail: genProducts, status: 0 };
+      console.log(params);
+      const response = await cartApi.update(id, params);
+      setIsLoading(false);
+      if (response.ok && response.data) {
+        Alert.alert("Update cart successfully");
+      } else {
+        Alert.alert(response.data.message);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>
+      <Loader visible={isLoading} />
       <Header
         title='Cart'
         navigation={navigation}
@@ -66,13 +95,23 @@ const Cart = ({ navigation }) => {
           <CustomText text={`Total(${totalAmount})`} style={styles.total} />
           <CustomText text={format.currency(totalPrice)} style={styles.total} />
         </View>
-        <View>
-          <Button
-            title='Checkout'
-            disabled={products.length == 0}
-            onPress={checkout}
-            color={products.length > 0 ? Color.black : Color.grey999999}
-          />
+        <View style={{ flexDirection: "row", justifyContent: "space-around" }}>
+          <View style={{ width: "45%" }}>
+            <Button
+              title='Update Cart'
+              disabled={products.length == 0}
+              onPress={updateCart}
+              color={products.length > 0 ? Color.black : Color.grey999999}
+            />
+          </View>
+          <View style={{ width: "45%" }}>
+            <Button
+              title='Checkout'
+              disabled={products.length == 0}
+              onPress={checkout}
+              color={products.length > 0 ? Color.black : Color.grey999999}
+            />
+          </View>
         </View>
       </View>
     </SafeAreaView>

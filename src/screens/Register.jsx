@@ -8,6 +8,7 @@ import {
   View,
   StyleSheet,
 } from "react-native";
+import { authApi } from "../api";
 import { Button, CustomText, Input, Loader } from "../components";
 import Color from "../constants/Color";
 
@@ -15,7 +16,8 @@ const Register = ({ navigation }) => {
   const [inputs, setInputs] = React.useState({
     email: "",
     fullname: "",
-    phone: "",
+    // phone: "",
+    username: "",
     password: "",
   });
   const [errors, setErrors] = React.useState({});
@@ -38,8 +40,11 @@ const Register = ({ navigation }) => {
       isValid = false;
     }
 
-    if (!inputs.phone) {
-      handleError("Please input phone number", "phone");
+    if (!inputs.username) {
+      handleError("Please input user name", "username");
+      isValid = false;
+    } else if (inputs.username.indexOf(" ") >= 0) {
+      handleError("User name can't contain spaces", "username");
       isValid = false;
     }
 
@@ -56,18 +61,24 @@ const Register = ({ navigation }) => {
     }
   };
 
-  const register = () => {
-    console.log(inputs);
-    setLoading(true);
-    setTimeout(() => {
-      try {
-        setLoading(false);
-        // AsyncStorage.setItem('userData', JSON.stringify(inputs));
-        // navigation.navigate('LoginScreen');
-      } catch (error) {
-        Alert.alert("Error", "Something went wrong");
+  const register = async () => {
+    try {
+      console.log(inputs);
+      setLoading(true);
+      const response = await authApi.register({
+        ...inputs,
+        email: inputs.email.trim().toLowerCase(),
+      });
+      setLoading(false);
+      if (response.ok) {
+        Alert.alert("Register Successfully");
+        navigation.goBack();
+      } else {
+        Alert.alert(response.data.message);
       }
-    }, 3000);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const handleOnchange = (text, input) => {
@@ -106,7 +117,7 @@ const Register = ({ navigation }) => {
             error={errors.fullname}
           />
 
-          <Input
+          {/* <Input
             keyboardType='numeric'
             onChangeText={(text) => handleOnchange(text, "phone")}
             onFocus={() => handleError(null, "phone")}
@@ -114,6 +125,14 @@ const Register = ({ navigation }) => {
             label='Phone Number'
             placeholder='Enter your phone number'
             error={errors.phone}
+          /> */}
+          <Input
+            onChangeText={(text) => handleOnchange(text, "username")}
+            onFocus={() => handleError(null, "username")}
+            iconName='account-outline'
+            label='User Name'
+            placeholder='Enter your user name'
+            error={errors.username}
           />
           <Input
             onChangeText={(text) => handleOnchange(text, "password")}

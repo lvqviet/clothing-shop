@@ -1,6 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
+  id: "",
   products: [],
   totalAmount: 0,
   totalPrice: 0,
@@ -10,12 +11,23 @@ const slice = createSlice({
   name: "cart",
   initialState,
   reducers: {
+    get_cart: (state, action) => {
+      const { detail, _id } = action.payload;
+      let totalAmount = 0;
+
+      detail.forEach((item) => {
+        totalAmount += item.amount;
+      });
+
+      return { ...state, totalAmount, id: _id };
+    },
     add_to_cart: (state, action) => {
       const { product, amount, size } = action.payload;
       let cloneProducts = [...state.products];
       const findIndex = state.products.findIndex(
         (e) => e.product._id == product._id
       );
+
       if (findIndex == -1) {
         cloneProducts.push({ product, amount, size });
       } else if (state.products[findIndex].size == size) {
@@ -28,6 +40,7 @@ const slice = createSlice({
         const index = state.products.findIndex(
           (e) => e.product._id == product._id && e.size == size
         );
+
         if (index != -1) {
           cloneProducts = [...cloneProducts].map((item, idx) => {
             if (index == idx) return { ...item, amount: item.amount + amount };
@@ -77,6 +90,9 @@ const slice = createSlice({
       const totalPrice = state.totalPrice - item.product.price;
 
       return { ...state, totalAmount, totalPrice, products: cloneProducts };
+    },
+    clear: (state, action) => {
+      return { ...state, initialState };
     },
   },
 });

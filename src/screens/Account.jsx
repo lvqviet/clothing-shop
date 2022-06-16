@@ -4,10 +4,10 @@ import { useSelector } from "react-redux";
 import { Button, CustomText, Header, Input } from "../components";
 
 const Account = ({ navigation }) => {
-  const { email, userName } = useSelector((state) => state.user);
+  const { email, userName, fullName } = useSelector((state) => state.user);
 
   const [inputs, setInputs] = React.useState({
-    fullname: userName,
+    fullname: fullName,
     phone: "0999123456",
   });
   const [errors, setErrors] = React.useState({});
@@ -65,6 +65,13 @@ const Account = ({ navigation }) => {
               iconName='email-outline'
               label='Email'
               value={email}
+              editable={false}
+            />
+
+            <Input
+              iconName='account-outline'
+              label='User Name'
+              value={userName}
               editable={false}
             />
 
