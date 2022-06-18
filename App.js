@@ -23,6 +23,7 @@ import {
   Cart,
   Checkout,
   Login,
+  OrderStatus,
   ProductDetail,
   Register,
 } from "./src/screens";
@@ -64,6 +65,11 @@ const ProtectedRoutes = [
   {
     name: "CHECKOUT",
     component: Checkout,
+    headerShown: false,
+  },
+  {
+    name: "ORDER_STATUS",
+    component: OrderStatus,
     headerShown: false,
   },
 ];

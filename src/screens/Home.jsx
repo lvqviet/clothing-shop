@@ -59,7 +59,7 @@ const Home = ({ navigation }) => {
       if (response.ok) {
         dispatch(actions.cart.get_cart(response.data));
       } else {
-        Alert.alert(response.data.message);
+        // Alert.alert(response.data.message);
       }
     } catch (error) {
       console.log(error);

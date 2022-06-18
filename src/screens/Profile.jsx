@@ -14,7 +14,7 @@ import { actions } from "../redux";
 
 const menuProfileAuth = [
   { title: "My Account", screen: "ACCOUNT" },
-  { title: "Order Status", screen: "" },
+  { title: "Order Status", screen: "ORDER_STATUS" },
   { title: "Log Out", screen: "" },
 ];
 

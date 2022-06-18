@@ -38,6 +38,7 @@ const Cart = ({ navigation }) => {
   }
 
   function checkout() {
+    updateCart();
     navigation.navigate("CHECKOUT");
   }
 
@@ -52,7 +53,6 @@ const Cart = ({ navigation }) => {
         };
       });
       const params = { detail: genProducts, status: 0 };
-      console.log(params);
       const response = await cartApi.update(id, params);
       setIsLoading(false);
       if (response.ok && response.data) {

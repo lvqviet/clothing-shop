@@ -4,20 +4,25 @@ import Carousel, { Pagination } from "react-native-snap-carousel";
 
 const ENTRIES1 = [
   {
-    illustration:
-      "https://media.sproutsocial.com/uploads/2017/02/10x-featured-social-media-image-size.png",
+    url: require("./../../assets/slide-01.jpg"),
   },
   {
-    illustration: "https://i.imgur.com/UPrs1EWl.jpg",
+    url: require("./../../assets/slide-02.jpg"),
   },
   {
-    illustration: "https://i.imgur.com/MABUbpDl.jpg",
+    url: require("./../../assets/slide-03.jpg"),
   },
   {
-    illustration: "https://i.imgur.com/KZsmUi2l.jpg",
+    url: require("./../../assets/slide-04.jpg"),
   },
   {
-    illustration: "https://picsum.photos/id/11/200/300",
+    url: require("./../../assets/slide-05.jpg"),
+  },
+  {
+    url: require("./../../assets/slide-06.jpg"),
+  },
+  {
+    url: require("./../../assets/slide-07.jpg"),
   },
 ];
 export const SLIDER_WIDTH = Dimensions.get("window").width;
@@ -40,7 +45,7 @@ const Banner = (props) => {
   const renderItem = ({ item, index }) => {
     return (
       <View style={styles.container} key={index}>
-        <Image source={{ uri: item.illustration }} style={styles.image} />
+        <Image source={item.url} style={styles.image} />
         <Text style={styles.title}>{item.title}</Text>
         <Text style={styles.subtitle}>{item.body}</Text>
       </View>
