@@ -13,13 +13,23 @@ const slice = createSlice({
   reducers: {
     get_cart: (state, action) => {
       const { detail, _id } = action.payload;
-      let totalAmount = 0;
+      let totalAmount = 0,
+        totalPrice = 0;
 
       detail.forEach((item) => {
         totalAmount += item.amount;
+        totalPrice += item.product.price * item.amount;
       });
 
-      return { ...state, totalAmount, id: _id };
+      let products = detail.map((e) => {
+        return {
+          product: e.product,
+          amount: e.amount,
+          size: e.size,
+        };
+      });
+
+      return { ...state, totalAmount, totalPrice, products, id: _id };
     },
     add_to_cart: (state, action) => {
       const { product, amount, size } = action.payload;

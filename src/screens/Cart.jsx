@@ -26,19 +26,38 @@ const Cart = ({ navigation }) => {
 
   const [isLoading, setIsLoading] = useState(false);
 
+  function showConfirmDelete(item) {
+    Alert.alert("Delete item selected?", "", [
+      {
+        text: "Cancel",
+        style: "cancel",
+      },
+      {
+        text: "OK",
+        onPress: () => deleteItem(item),
+      },
+    ]);
+  }
+
   function deleteItem(item) {
     dispatch(actions.cart.delete_item({ item }));
   }
 
   function increaseAmount(item) {
+    const { productInfo } = item.product;
+    const maxQuantity =
+      productInfo[productInfo.findIndex((e) => e.size == item.size)].amount;
+    if (item.amount >= maxQuantity) return;
     dispatch(actions.cart.increase_amount({ item }));
   }
+
   function decreaseAmount(item) {
+    if (item.amount == 1) return;
     dispatch(actions.cart.decrease_amount({ item }));
   }
 
-  function checkout() {
-    updateCart();
+  async function checkout() {
+    await updateCart();
     navigation.navigate("CHECKOUT");
   }
 
@@ -56,7 +75,7 @@ const Cart = ({ navigation }) => {
       const response = await cartApi.update(id, params);
       setIsLoading(false);
       if (response.ok && response.data) {
-        Alert.alert("Update cart successfully");
+        // Alert.alert("Update cart successfully");
       } else {
         Alert.alert(response.data.message);
       }
@@ -79,7 +98,7 @@ const Cart = ({ navigation }) => {
           <CartItem
             item={item}
             key={index}
-            onDelete={() => deleteItem(item)}
+            onDelete={() => showConfirmDelete(item)}
             increaseAmount={() => increaseAmount(item)}
             decreaseAmount={() => decreaseAmount(item)}
           />
