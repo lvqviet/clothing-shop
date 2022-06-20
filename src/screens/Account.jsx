@@ -1,5 +1,13 @@
 import React from "react";
-import { Keyboard, SafeAreaView, StyleSheet, View, Image } from "react-native";
+import {
+  Keyboard,
+  SafeAreaView,
+  StyleSheet,
+  View,
+  Image,
+  ScrollView,
+  Alert,
+} from "react-native";
 import { useSelector } from "react-redux";
 import {
   Button,
@@ -13,17 +21,25 @@ import { Feather, Ionicons } from "@expo/vector-icons";
 import Color from "../constants/Color";
 import { useState } from "react";
 import { uploadAvatar } from "../api/uploadImage";
+import { userApi } from "../api";
+import Regex from "../constants/Regex";
+import { useDispatch } from "react-redux";
+import { actions } from "../redux";
 
 const Account = ({ navigation }) => {
-  const { email, userName, fullName } = useSelector((state) => state.user);
+  const { email, userName, fullName, avatar, contact, address, id } =
+    useSelector((state) => state.user);
+
+  const dispatch = useDispatch();
 
   const [inputs, setInputs] = useState({
     fullname: fullName,
-    phone: "0999123456",
+    phone: contact,
+    address,
   });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
-  const [avatar, setAvatar] = useState("");
+  const [avatarUrl, setAvatarUrl] = useState(avatar);
 
   const validate = () => {
     Keyboard.dismiss();
@@ -37,15 +53,48 @@ const Account = ({ navigation }) => {
     if (!inputs.phone) {
       handleError("Please input phone number", "phone");
       isValid = false;
+    } else if (!inputs.phone.match(Regex.vietnamesePhoneNumber)) {
+      handleError("Please input a valid phone number", "phone");
+      isValid = false;
+    }
+
+    if (!inputs.address) {
+      handleError("Please input address", "address");
+      isValid = false;
     }
 
     if (isValid) {
-      update();
+      updateInfo();
     }
   };
 
-  const update = () => {
-    console.log(inputs);
+  const updateInfo = async (avatarUrl) => {
+    try {
+      setLoading(true);
+
+      const response = await userApi.update(id, {
+        fullname: inputs.fullname.trim(),
+        contact: inputs.phone.trim(),
+        address: inputs.address.trim(),
+        avatar: avatarUrl ?? avatar,
+      });
+      setLoading(false);
+      if (response.ok) {
+        dispatch(
+          actions.user.update_info({
+            fullName: inputs.fullname.trim(),
+            contact: inputs.phone.trim(),
+            address: inputs.address.trim(),
+            avatar: avatarUrl ?? avatar,
+          })
+        );
+        Alert.alert("Update successfully");
+      } else {
+        Alert.alert("An error occurred");
+      }
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const handleOnchange = (text, input) => {
@@ -61,9 +110,10 @@ const Account = ({ navigation }) => {
       const response = await uploadAvatar(image);
       setLoading(false);
       if (response.ok && response.data) {
-        setAvatar(response.data.data.link);
+        setAvatarUrl(response.data.data.link);
+        await updateInfo(response.data.data.link);
       } else {
-        console.log(response.config);
+        console.log("An error occurred");
       }
     } catch (error) {
       console.log(error);
@@ -80,27 +130,26 @@ const Account = ({ navigation }) => {
         showCartIcon={false}
       />
 
-      <ModalUploadImage onConfirm={updateAvatar}>
-        <View style={styles.containerAvatar}>
-          <Image
-            resizeMode='cover'
-            source={
-              avatar != ""
-                ? { uri: avatar }
-                : require("../../assets/product.jpg")
-            }
-            style={styles.avatar}
-          />
-          <Feather
-            name='edit'
-            size={24}
-            color={Color.purple717fe0}
-            style={styles.editIcon}
-          />
-        </View>
-      </ModalUploadImage>
-
-      <View style={styles.container}>
+      <ScrollView style={styles.container}>
+        <ModalUploadImage onConfirm={updateAvatar}>
+          <View style={styles.containerAvatar}>
+            <Image
+              resizeMode='cover'
+              source={
+                avatarUrl != ""
+                  ? { uri: avatarUrl }
+                  : require("../../assets/icon.png")
+              }
+              style={styles.avatar}
+            />
+            <Feather
+              name='edit'
+              size={24}
+              color={Color.purple717fe0}
+              style={styles.editIcon}
+            />
+          </View>
+        </ModalUploadImage>
         <View
           style={{
             marginVertical: 20,
@@ -145,6 +194,16 @@ const Account = ({ navigation }) => {
               value={inputs.phone}
             />
 
+            <Input
+              onChangeText={(text) => handleOnchange(text, "address")}
+              onFocus={() => handleError(null, "address")}
+              iconName='home-outline'
+              label='Address'
+              placeholder='Enter your address'
+              error={errors.address}
+              value={inputs.address}
+            />
+
             <CustomText
               text='Change Password'
               style={styles.changePassword}
@@ -153,7 +212,7 @@ const Account = ({ navigation }) => {
           </View>
           <Button title='Update' onPress={validate} />
         </View>
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 };
@@ -162,6 +221,7 @@ export default Account;
 
 const styles = StyleSheet.create({
   container: {
+    marginTop: 45,
     flex: 1,
   },
   changePassword: {
@@ -169,9 +229,9 @@ const styles = StyleSheet.create({
     fontFamily: "Poppins_600SemiBold",
     textAlign: "right",
     fontSize: 16,
+    marginBottom: 30,
   },
   containerAvatar: {
-    marginTop: 45,
     alignSelf: "center",
   },
   avatar: {

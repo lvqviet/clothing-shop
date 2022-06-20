@@ -21,10 +21,26 @@ const Home = ({ navigation }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [products, setProducts] = useState([]);
   const [productTypes, setProductTypes] = useState([]);
-  const [lowToHigh, setLowToHigh] = useState(false);
+  const [pageInfo, setPageInfo] = useState({
+    page: 0,
+    pageSize: 10,
+    isLastPage: false,
+  });
 
   const { id, isLogin } = useSelector((state) => state.user);
   const dispatch = useDispatch();
+
+  const isCloseToBottom = ({
+    layoutMeasurement,
+    contentOffset,
+    contentSize,
+  }) => {
+    const paddingToBottom = 20;
+    return (
+      layoutMeasurement.height + contentOffset.y >=
+      contentSize.height - paddingToBottom
+    );
+  };
 
   const onPressItem = (id) => {
     navigation.navigate("PRODUCT_DETAIL", { id });
@@ -32,17 +48,35 @@ const Home = ({ navigation }) => {
 
   async function getProducts() {
     try {
+      if (pageInfo.isLastPage || isLoading) {
+        return;
+      }
       setIsLoading(true);
-      const response = await productApi.getProducts();
+      const response = await productApi.getProducts(
+        pageInfo.page,
+        pageInfo.pageSize
+      );
       setIsLoading(false);
       if (response.ok && response.data.product) {
-        const products = response.data.product;
-        setProducts(products);
+        const productsData = response.data.product;
+        const total = response.data.total;
+
+        if (pageInfo.page == 0 || products.length == 0) {
+          setProducts(productsData);
+        } else {
+          setProducts([...products, ...productsData]);
+        }
+
+        setPageInfo({
+          ...pageInfo,
+          page: pageInfo.page + 1,
+          isLastPage: total <= (pageInfo.page + 1) * pageInfo.pageSize,
+        });
 
         const listTypes = new Set();
         listTypes.add("All Products");
-        for (let i = 0; i < products.length; i++) {
-          listTypes.add(products[i].productType);
+        for (let i = 0; i < productsData.length; i++) {
+          listTypes.add(productsData[i].productType);
         }
         setProductTypes(Array.from(listTypes));
       } else {
@@ -78,7 +112,15 @@ const Home = ({ navigation }) => {
     <SafeAreaView style={styles.container}>
       <Loader visible={isLoading} />
       <Header navigation={navigation} />
-      <ScrollView style={styles.scrollCtn}>
+      <ScrollView
+        style={styles.scrollCtn}
+        onScroll={({ nativeEvent }) => {
+          if (isCloseToBottom(nativeEvent)) {
+            getProducts();
+          }
+        }}
+        scrollEventThrottle={400}
+      >
         <View style={styles.content}>
           <Banner />
 
@@ -110,7 +152,7 @@ const Home = ({ navigation }) => {
               </View>
             ) : null}
 
-            <TouchableOpacity
+            {/* <TouchableOpacity
               style={styles.filter}
               onPress={() => console.log("cc")}
             >
@@ -118,7 +160,7 @@ const Home = ({ navigation }) => {
               <Text style={styles.textFilter}>
                 {lowToHigh ? "Low to High" : "High to Low"}
               </Text>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
           </View>
 
           <View style={styles.listProduct}>

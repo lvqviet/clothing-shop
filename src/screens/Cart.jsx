@@ -1,5 +1,5 @@
 import { Feather, Ionicons } from "@expo/vector-icons";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Alert,
   Dimensions,
@@ -27,7 +27,7 @@ const Cart = ({ navigation }) => {
   const [isLoading, setIsLoading] = useState(false);
 
   function showConfirmDelete(item) {
-    Alert.alert("Delete item selected?", "", [
+    Alert.alert("Delete selected item?", "", [
       {
         text: "Cancel",
         style: "cancel",
@@ -39,7 +39,7 @@ const Cart = ({ navigation }) => {
     ]);
   }
 
-  function deleteItem(item) {
+  async function deleteItem(item) {
     dispatch(actions.cart.delete_item({ item }));
   }
 
@@ -57,7 +57,7 @@ const Cart = ({ navigation }) => {
   }
 
   async function checkout() {
-    await updateCart();
+    // await updateCart();
     navigation.navigate("CHECKOUT");
   }
 
@@ -75,7 +75,7 @@ const Cart = ({ navigation }) => {
       const response = await cartApi.update(id, params);
       setIsLoading(false);
       if (response.ok && response.data) {
-        // Alert.alert("Update cart successfully");
+        // Alert.alert("Saved");
       } else {
         Alert.alert(response.data.message);
       }
@@ -83,6 +83,10 @@ const Cart = ({ navigation }) => {
       console.log(error);
     }
   }
+
+  useEffect(() => {
+    updateCart();
+  }, [products]);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>
@@ -115,15 +119,15 @@ const Cart = ({ navigation }) => {
           <CustomText text={format.currency(totalPrice)} style={styles.total} />
         </View>
         <View style={{ flexDirection: "row", justifyContent: "space-around" }}>
-          <View style={{ width: "45%" }}>
+          {/* <View style={{ width: "45%" }}>
             <Button
-              title='Update Cart'
+              title='Save Cart'
               disabled={products.length == 0}
               onPress={updateCart}
               color={products.length > 0 ? Color.black : Color.grey999999}
             />
-          </View>
-          <View style={{ width: "45%" }}>
+          </View> */}
+          <View style={{ width: "80%" }}>
             <Button
               title='Checkout'
               disabled={products.length == 0}

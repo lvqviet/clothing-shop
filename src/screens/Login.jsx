@@ -6,6 +6,7 @@ import { authApi } from "../api";
 import { setNewToken } from "../api/api";
 import { Button, CustomText, Input, Loader } from "../components";
 import Color from "../constants/Color";
+import Regex from "../constants/Regex";
 import { storage } from "../helper";
 import { actions } from "../redux";
 
@@ -22,7 +23,7 @@ const LoginScreen = ({ navigation }) => {
     if (!inputs.email) {
       handleError("Please input email", "email");
       isValid = false;
-    } else if (!inputs.email.match(/\S+@\S+\.\S+/)) {
+    } else if (!inputs.email.match(Regex.email)) {
       handleError("Please input a valid email", "email");
       isValid = false;
     }
@@ -46,7 +47,7 @@ const LoginScreen = ({ navigation }) => {
       setLoading(false);
       if (response.ok && response.data.accessToken) {
         const { accessToken } = response.data;
-        const { id, email, avatar, username, fullname } =
+        const { id, email, avatar, username, fullName, contact, address } =
           response.data.userData;
         if (accessToken) {
           await storage.set("token", accessToken);
@@ -58,7 +59,9 @@ const LoginScreen = ({ navigation }) => {
               email: email,
               avatar: avatar,
               userName: username,
-              fullName: fullname ?? "",
+              fullName,
+              contact,
+              address,
             })
           );
           navigation.goBack();

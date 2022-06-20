@@ -102,7 +102,7 @@ const slice = createSlice({
       return { ...state, totalAmount, totalPrice, products: cloneProducts };
     },
     clear: (state, action) => {
-      return { ...state, initialState };
+      return { ...state, products: [], totalAmount: 0, totalPrice: 0 };
     },
   },
 });

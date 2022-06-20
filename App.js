@@ -118,14 +118,17 @@ function App() {
         try {
           const response = await userApi.getMe(id);
           if (response.ok && response.data) {
-            const { _id, email, avatar, username, fullname } = response.data[0];
+            const { _id, email, avatar, username, fullname, contact, address } =
+              response.data[0];
             dispatch(
               actions.user.login({
                 id: _id,
                 email: email,
                 avatar: avatar,
                 userName: username,
-                fullName: fullname,
+                fullName: fullname ?? "",
+                contact,
+                address,
               })
             );
           } else {

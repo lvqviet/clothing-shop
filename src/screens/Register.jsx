@@ -8,20 +8,27 @@ import {
   View,
   StyleSheet,
 } from "react-native";
-import { authApi } from "../api";
+import { useDispatch } from "react-redux";
+import { authApi, cartApi } from "../api";
+import { setNewToken } from "../api/api";
 import { Button, CustomText, Input, Loader } from "../components";
 import Color from "../constants/Color";
+import Regex from "../constants/Regex";
+import { storage } from "../helper";
+import { actions } from "../redux";
 
 const Register = ({ navigation }) => {
   const [inputs, setInputs] = React.useState({
     email: "",
     fullname: "",
-    // phone: "",
+    phone: "",
     username: "",
     password: "",
   });
   const [errors, setErrors] = React.useState({});
   const [loading, setLoading] = React.useState(false);
+
+  const dispatch = useDispatch();
 
   const validate = () => {
     Keyboard.dismiss();
@@ -30,13 +37,21 @@ const Register = ({ navigation }) => {
     if (!inputs.email) {
       handleError("Please input email", "email");
       isValid = false;
-    } else if (!inputs.email.match(/\S+@\S+\.\S+/)) {
+    } else if (!inputs.email.match(Regex.email)) {
       handleError("Please input a valid email", "email");
       isValid = false;
     }
 
     if (!inputs.fullname) {
       handleError("Please input fullname", "fullname");
+      isValid = false;
+    }
+
+    if (!inputs.phone) {
+      handleError("Please input phone number", "phone");
+      isValid = false;
+    } else if (!inputs.phone.match(Regex.vietnamesePhoneNumber)) {
+      handleError("Please input a valid phone number", "phone");
       isValid = false;
     }
 
@@ -63,23 +78,61 @@ const Register = ({ navigation }) => {
 
   const register = async () => {
     try {
-      console.log(inputs);
       setLoading(true);
       const response = await authApi.register({
-        ...inputs,
         email: inputs.email.trim().toLowerCase(),
+        contact: inputs.phone.trim(),
+        fullname: inputs.fullname.trim(),
+        username: inputs.username.trim(),
+        password: inputs.password,
+        address: "",
       });
-      setLoading(false);
-      if (response.ok) {
-        Alert.alert("Register Successfully");
-        navigation.goBack();
+      if (response.ok && response.data.accessToken) {
+        const { accessToken } = response.data;
+        const { id, email, avatar, username, fullName, contact, address } =
+          response.data.userData;
+        if (accessToken) {
+          await storage.set("token", accessToken);
+          await storage.set("userId", id);
+          setNewToken(accessToken);
+          dispatch(
+            actions.user.login({
+              id: id,
+              email: email,
+              avatar: avatar,
+              userName: username,
+              fullName,
+              contact,
+              address,
+            })
+          );
+          await createCart(id);
+          setLoading(false);
+          navigation.navigate("HOME");
+        }
       } else {
         Alert.alert(response.data.message);
+        setLoading(false);
       }
     } catch (error) {
       console.log(error);
     }
   };
+
+  async function createCart(userId) {
+    try {
+      const response = await cartApi.create({
+        userId,
+        detail: [],
+        status: 0,
+      });
+      if (!response.ok) {
+        Alert.alert("create cart failed");
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
 
   const handleOnchange = (text, input) => {
     setInputs((prevState) => ({ ...prevState, [input]: text }));
@@ -109,6 +162,16 @@ const Register = ({ navigation }) => {
           />
 
           <Input
+            keyboardType='numeric'
+            onChangeText={(text) => handleOnchange(text, "phone")}
+            onFocus={() => handleError(null, "phone")}
+            iconName='phone-outline'
+            label='Phone Number'
+            placeholder='Enter your phone number'
+            error={errors.phone}
+          />
+
+          <Input
             onChangeText={(text) => handleOnchange(text, "fullname")}
             onFocus={() => handleError(null, "fullname")}
             iconName='account-outline'
@@ -117,15 +180,6 @@ const Register = ({ navigation }) => {
             error={errors.fullname}
           />
 
-          {/* <Input
-            keyboardType='numeric'
-            onChangeText={(text) => handleOnchange(text, "phone")}
-            onFocus={() => handleError(null, "phone")}
-            iconName='phone-outline'
-            label='Phone Number'
-            placeholder='Enter your phone number'
-            error={errors.phone}
-          /> */}
           <Input
             onChangeText={(text) => handleOnchange(text, "username")}
             onFocus={() => handleError(null, "username")}

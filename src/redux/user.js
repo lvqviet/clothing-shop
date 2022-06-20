@@ -6,6 +6,8 @@ const initialState = {
   avatar: "",
   userName: "",
   fullName: "",
+  contact: "",
+  address: "",
   isLogin: false,
 };
 
@@ -14,7 +16,8 @@ const slice = createSlice({
   initialState,
   reducers: {
     login: (state, action) => {
-      const { id, email, avatar, userName, fullName } = action.payload;
+      const { id, email, avatar, userName, fullName, contact, address } =
+        action.payload;
 
       return {
         ...state,
@@ -24,10 +27,17 @@ const slice = createSlice({
         avatar,
         userName,
         fullName,
+        contact,
+        address,
       };
     },
     logout: (state, action) => {
       return { ...state, isLogin: false };
+    },
+    update_info: (state, action) => {
+      const { fullName, contact, address, avatar } = action.payload;
+
+      return { ...state, fullName, contact, address, avatar };
     },
   },
 });

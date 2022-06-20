@@ -1,6 +1,8 @@
 import moment from "moment";
+import { useEffect } from "react";
 import { useState } from "react";
 import {
+  Alert,
   Image,
   Pressable,
   SafeAreaView,
@@ -8,13 +10,48 @@ import {
   StyleSheet,
   View,
 } from "react-native";
-import { CustomText, Header, Loader } from "../components";
+import { useSelector } from "react-redux";
+import { orderApi } from "../api";
+import { Button, CustomText, Header, Loader } from "../components";
 import Color from "../constants/Color";
 import { format } from "../helper";
 
 const OrderStatus = ({ navigation }) => {
   const [isLoading, setIsLoading] = useState(false);
-  const [active, setActive] = useState("Pending");
+  const [active, setActive] = useState(0); // 0: pending, 1: shipping, 2: received
+  const [orders, setOrders] = useState([]);
+
+  const { id } = useSelector((state) => state.user);
+
+  async function getOrders() {
+    try {
+      setIsLoading(true);
+      const response = await orderApi.getAll(id);
+      setIsLoading(false);
+      if (response.ok && response.data) {
+        setOrders(response.data);
+      } else {
+        Alert.alert("An error occurred");
+      }
+    } catch (error) {}
+  }
+
+  async function confirmReceived(id) {
+    try {
+      setIsLoading(true);
+      const response = await orderApi.updateStatus(id, { status: 2 });
+      setIsLoading(false);
+      if (response.ok) {
+        getOrders();
+      } else {
+        Alert.alert("An error occurred");
+      }
+    } catch (error) {}
+  }
+
+  useEffect(() => {
+    getOrders();
+  }, []);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -24,9 +61,19 @@ const OrderStatus = ({ navigation }) => {
       <TabBar active={active} onChange={setActive} />
 
       <ScrollView style={styles.scrollCtn}>
-        <OrderItem />
-        <OrderItem />
-        <OrderItem />
+        {orders
+          ? orders
+              .filter((item) => item.status == active)
+              .map((item, index) => {
+                return (
+                  <OrderItem
+                    item={item}
+                    confirmReceived={() => confirmReceived(item._id)}
+                    key={index}
+                  />
+                );
+              })
+          : null}
       </ScrollView>
     </SafeAreaView>
   );
@@ -36,66 +83,54 @@ const TabBar = ({ active, onChange }) => {
   return (
     <View style={styles.tabBarCtn}>
       <Pressable
-        style={[styles.tab, { borderBottomWidth: active == "Pending" ? 3 : 0 }]}
-        onPress={() => onChange("Pending")}
+        style={[styles.tab, { borderBottomWidth: active == 0 ? 3 : 0 }]}
+        onPress={() => onChange(0)}
       >
         <CustomText
-          onPress={() => onChange("Pending")}
+          onPress={() => onChange(0)}
           text='Pending'
           style={[
             styles.tabTitle,
             {
               fontFamily:
-                active == "Pending"
-                  ? "Poppins_600SemiBold"
-                  : "Poppins_400Regular",
-              color: active == "Pending" ? Color.purple717fe0 : Color.text,
+                active == 0 ? "Poppins_600SemiBold" : "Poppins_400Regular",
+              color: active == 0 ? Color.purple717fe0 : Color.text,
             },
           ]}
         />
       </Pressable>
 
       <Pressable
-        style={[
-          styles.tab,
-          { borderBottomWidth: active == "Shipping" ? 3 : 0 },
-        ]}
-        onPress={() => onChange("Shipping")}
+        style={[styles.tab, { borderBottomWidth: active == 1 ? 3 : 0 }]}
+        onPress={() => onChange(1)}
       >
         <CustomText
-          onPress={() => onChange("Shipping")}
+          onPress={() => onChange(1)}
           text='Shipping'
           style={[
             styles.tabTitle,
             {
               fontFamily:
-                active == "Shipping"
-                  ? "Poppins_600SemiBold"
-                  : "Poppins_400Regular",
-              color: active == "Shipping" ? Color.purple717fe0 : Color.text,
+                active == 1 ? "Poppins_600SemiBold" : "Poppins_400Regular",
+              color: active == 1 ? Color.purple717fe0 : Color.text,
             },
           ]}
         />
       </Pressable>
 
       <Pressable
-        style={[
-          styles.tab,
-          { borderBottomWidth: active == "Received" ? 3 : 0 },
-        ]}
-        onPress={() => onChange("Received")}
+        style={[styles.tab, { borderBottomWidth: active == 2 ? 3 : 0 }]}
+        onPress={() => onChange(2)}
       >
         <CustomText
-          onPress={() => onChange("Received")}
+          onPress={() => onChange(2)}
           text='Received'
           style={[
             styles.tabTitle,
             {
               fontFamily:
-                active == "Received"
-                  ? "Poppins_600SemiBold"
-                  : "Poppins_400Regular",
-              color: active == "Received" ? Color.purple717fe0 : Color.text,
+                active == 2 ? "Poppins_600SemiBold" : "Poppins_400Regular",
+              color: active == 2 ? Color.purple717fe0 : Color.text,
             },
           ]}
         />
@@ -104,16 +139,25 @@ const TabBar = ({ active, onChange }) => {
   );
 };
 
-const OrderItem = ({ products, navigation }) => {
+const OrderItem = ({ item, confirmReceived }) => {
+  let totalAmount = 0,
+    totalPrice = 0;
+  item.detail.forEach((e) => {
+    totalAmount += e.amount;
+    totalPrice += e.product.price * e.amount;
+  });
+
   return (
     <View style={styles.orderItem}>
       <CustomText
-        text={`Order date: ${moment(Date.now()).format("DD MM yyyy HH:mm")}`}
+        text={`Order date: ${
+          moment(item?.paymentDate).format("HH:mm DD/MM/yyyy") ?? ""
+        }`}
         style={styles.date}
       />
 
-      {[1, 2, 3].map((item, index) => {
-        return <CartItem key={index} />;
+      {item.detail.map((e, index) => {
+        return <CartItem key={index} item={e} />;
       })}
 
       <View
@@ -123,9 +167,18 @@ const OrderItem = ({ products, navigation }) => {
           paddingHorizontal: 15,
         }}
       >
-        <CustomText text='Total(6): ' style={styles.total} />
-        <CustomText text={format.currency(1200000)} style={styles.total} />
+        <CustomText text={`Total(${totalAmount}): `} style={styles.total} />
+        <CustomText
+          text={format.currency(totalPrice + 23000)}
+          style={styles.total}
+        />
       </View>
+
+      {item.status == 1 ? (
+        <View style={{ paddingHorizontal: 100 }}>
+          <Button title='Received' onPress={confirmReceived} />
+        </View>
+      ) : null}
     </View>
   );
 };
@@ -157,7 +210,10 @@ const CartItem = ({ item }) => {
           numberOfLines={1}
         />
         <View style={styles.priceCtn}>
-          <CustomText text={format.currency(200000)} style={styles.price} />
+          <CustomText
+            text={format.currency(item.product.price)}
+            style={styles.price}
+          />
           <CustomText text={`x ${item?.amount ?? 2}`} style={styles.price} />
         </View>
       </View>

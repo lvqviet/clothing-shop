@@ -12,7 +12,7 @@ import {
 } from "react-native";
 import DropDownPicker from "react-native-dropdown-picker";
 import { useDispatch, useSelector } from "react-redux";
-import { productApi } from "../api";
+import { cartApi, productApi } from "../api";
 import { Button, CustomText, Header, Loader } from "../components";
 import Color from "../constants/Color";
 import { format } from "../helper";
@@ -49,6 +49,7 @@ const ProductDetail = ({ navigation, route }) => {
 
   const { id } = route.params;
   const { isLogin } = useSelector((state) => state.user);
+  const { products, totalAmount } = useSelector((state) => state.cart);
 
   const dispatch = useDispatch();
 
@@ -59,6 +60,7 @@ const ProductDetail = ({ navigation, route }) => {
     )
       setAmount(amount + 1);
   };
+
   const decrease = () => {
     if (amount > 1) setAmount(amount - 1);
   };
@@ -74,7 +76,31 @@ const ProductDetail = ({ navigation, route }) => {
     }
 
     dispatch(actions.cart.add_to_cart({ product, amount, size: value }));
+    updateCart();
   };
+
+  async function updateCart() {
+    try {
+      setIsLoading(true);
+      const genProducts = products.map((item) => {
+        return {
+          productId: item.product._id,
+          amount: item.amount,
+          size: item.size,
+        };
+      });
+      const params = { detail: genProducts, status: 0 };
+      const response = await cartApi.update(id, params);
+      setIsLoading(false);
+      if (response.ok && response.data) {
+        Alert.alert("Added");
+      } else {
+        Alert.alert(response.data.message);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
 
   useEffect(() => {
     async function getProduct() {
@@ -83,9 +109,9 @@ const ProductDetail = ({ navigation, route }) => {
         const response = await productApi.getById(id);
         setIsLoading(false);
         if (response.ok && response.data) {
-          setProduct(response.data[0]);
+          setProduct(response.data);
 
-          const listSize = response.data[0].productInfo.map((e) => ({
+          const listSize = response.data.productInfo.map((e) => ({
             label: e.size,
             value: e.size,
             origin: e,
@@ -96,11 +122,16 @@ const ProductDetail = ({ navigation, route }) => {
         }
       } catch (error) {
         Alert.alert("An error occurred");
+        console.log(error);
       }
     }
 
     getProduct();
   }, []);
+
+  // useEffect(() => {
+  //   updateCart();
+  // }, [totalAmount]);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -185,7 +216,22 @@ const ProductDetail = ({ navigation, route }) => {
             </View>
 
             <View style={styles.button}>
-              <Button title={"Add to cart".toUpperCase()} onPress={addToCart} />
+              <Button
+                title={"Add to cart".toUpperCase()}
+                onPress={addToCart}
+                disabled={
+                  value != null &&
+                  listSize[listSize.findIndex((e) => e.value == value)].origin
+                    .amount == 0
+                }
+                color={
+                  value != null &&
+                  listSize[listSize.findIndex((e) => e.value == value)].origin
+                    .amount == 0
+                    ? Color.grey999999
+                    : Color.purple717fe0
+                }
+              />
             </View>
           </View>
         ) : null}

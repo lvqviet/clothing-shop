@@ -8,6 +8,7 @@ const API_CONSTANTS = {
   USER: {
     GET_BY_ID: (id) => `users/${id}`,
     CHANGE_PASSWORD: "auth/changePassword",
+    UPDATE: (id) => `users/${id}`,
   },
   PRODUCT: {
     GET: (page = 0, pageSize = 10) =>
@@ -18,6 +19,11 @@ const API_CONSTANTS = {
     GET: (id) => `cart/get-by-userId/${id}`,
     CREATE: "cart",
     UPDATE: (id) => `cart/${id}`,
+  },
+  ORDER: {
+    CREATE: "order",
+    UPDATE_STATUS: (id) => `order/${id}`,
+    GET_ALL: (id) => `order/get-by-userId/${id}`,
   },
 };
 
