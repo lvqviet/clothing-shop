@@ -176,6 +176,7 @@ const Home = ({ navigation }) => {
                   key={index}
                   title={item.productname}
                   price={item.price}
+                  image={item.image}
                   onPress={() => onPressItem(item._id)}
                 />
               ))}

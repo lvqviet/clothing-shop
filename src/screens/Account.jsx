@@ -204,11 +204,11 @@ const Account = ({ navigation }) => {
               value={inputs.address}
             />
 
-            <CustomText
+            {/* <CustomText
               text='Change Password'
               style={styles.changePassword}
               onPress={() => {}}
-            />
+            /> */}
           </View>
           <Button title='Update' onPress={validate} />
         </View>

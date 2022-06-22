@@ -198,7 +198,11 @@ const CartItem = ({ item }) => {
   return (
     <View style={styles.cartItem}>
       <Image
-        source={require("../../assets/product.jpg")}
+        source={
+          item.product.image.includes("https")
+            ? { uri: item.product.image }
+            : require("../../assets/product.jpg")
+        }
         style={styles.image}
       />
       <View

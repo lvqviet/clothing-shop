@@ -1,9 +1,11 @@
 import { Feather } from "@expo/vector-icons";
+import { useRef } from "react";
 import { useEffect, useState } from "react";
 import {
   Alert,
   Dimensions,
   Image,
+  Pressable,
   SafeAreaView,
   ScrollView,
   StyleSheet,
@@ -18,34 +20,29 @@ import Color from "../constants/Color";
 import { format } from "../helper";
 import { actions } from "../redux";
 
-const IMAGES = [
-  {
-    source:
-      "https://media.sproutsocial.com/uploads/2017/02/10x-featured-social-media-image-size.png",
-  },
-  {
-    source: "https://i.imgur.com/UPrs1EWl.jpg",
-  },
-  {
-    source: "https://i.imgur.com/MABUbpDl.jpg",
-  },
-  {
-    source: "https://i.imgur.com/KZsmUi2l.jpg",
-  },
-  {
-    source: "https://picsum.photos/id/11/200/300",
-  },
-];
-
 const height = Dimensions.get("window").height;
 
 const ProductDetail = ({ navigation, route }) => {
+  let IMAGES = [
+    "https://media.coolmate.me/cdn-cgi/image/quality=80/uploads/March2022/tshirtxcool-4-copy.jpg",
+    ,
+    "https://media.coolmate.me/cdn-cgi/image/quality=80/uploads/March2022/4-0.jpg",
+    ,
+    "https://media.coolmate.me/cdn-cgi/image/quality=80/uploads/March2022/tshirtxcool-2-copy.jpg",
+    ,
+    "https://media.coolmate.me/cdn-cgi/image/quality=80/uploads/March2022/tshirtxcool-3-copy.jpg",
+    ,
+    "https://media.coolmate.me/cdn-cgi/image/quality=80/uploads/March2022/IMG_3256.jpg",
+    ,
+    "https://media.coolmate.me/cdn-cgi/image/quality=80/uploads/March2022/tshirtxcool-6-copy.jpg",
+  ];
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState(null);
   const [listSize, setListSize] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [product, setProduct] = useState();
   const [amount, setAmount] = useState(1);
+  const [showImage, setShowImage] = useState(IMAGES[0]);
 
   const { id } = route.params;
   const { isLogin } = useSelector((state) => state.user);
@@ -54,6 +51,10 @@ const ProductDetail = ({ navigation, route }) => {
   const dispatch = useDispatch();
 
   const increase = () => {
+    if (!value) {
+      Alert.alert("Please select size of item");
+      return;
+    }
     if (
       amount <
       listSize[listSize.findIndex((e) => e.value == value)].origin.amount
@@ -62,6 +63,10 @@ const ProductDetail = ({ navigation, route }) => {
   };
 
   const decrease = () => {
+    if (!value) {
+      Alert.alert("Please select size of item");
+      return;
+    }
     if (amount > 1) setAmount(amount - 1);
   };
 
@@ -117,6 +122,11 @@ const ProductDetail = ({ navigation, route }) => {
             origin: e,
           }));
           setListSize(listSize);
+
+          if (response.data?.image.includes("https")) {
+            IMAGES.unshift(response.data.image);
+            setShowImage(IMAGES[0]);
+          }
         } else {
           Alert.alert(response.data.message);
         }
@@ -129,10 +139,6 @@ const ProductDetail = ({ navigation, route }) => {
     getProduct();
   }, []);
 
-  // useEffect(() => {
-  //   updateCart();
-  // }, [totalAmount]);
-
   return (
     <SafeAreaView style={styles.container}>
       <Loader visible={isLoading} />
@@ -141,18 +147,21 @@ const ProductDetail = ({ navigation, route }) => {
         <View style={styles.preview}>
           <ScrollView style={styles.listImages}>
             {IMAGES.map((item, index) => (
-              <Image
-                source={{ uri: item.source }}
-                key={index}
-                style={styles.imageItem}
-              />
+              <Pressable onPress={() => setShowImage(item)} key={index}>
+                <Image source={{ uri: item }} style={styles.imageItem} />
+              </Pressable>
             ))}
           </ScrollView>
           <View style={styles.imageCtn}>
-            <Image
-              source={require("../../assets/product.jpg")}
-              style={styles.image}
-            />
+            {product ? (
+              <Image
+                // source={require("../../assets/product.jpg")}
+                source={{
+                  uri: showImage,
+                }}
+                style={styles.image}
+              />
+            ) : null}
           </View>
         </View>
 

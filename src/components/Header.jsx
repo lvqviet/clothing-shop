@@ -35,7 +35,7 @@ const Header = ({
     {showCartIcon ? (
       <View style={styles.listIcons}>
         <Cart navigation={navigation} />
-        <Feather name='heart' size={24} color='black' />
+        {/* <Feather name='heart' size={24} color='black' /> */}
       </View>
     ) : (
       <View style={{ width: "20%" }} />
