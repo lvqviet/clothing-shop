@@ -7,6 +7,7 @@ import OrderStatus from "./OrderStatus";
 import ProductDetail from "./ProductDetail";
 import Profile from "./Profile";
 import Register from "./Register";
+import ChangePassword from "./ChangePassword";
 
 export {
   Account,
@@ -18,4 +19,5 @@ export {
   ProductDetail,
   Profile,
   Register,
+  ChangePassword,
 };

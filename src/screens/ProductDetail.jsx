@@ -24,17 +24,11 @@ const height = Dimensions.get("window").height;
 
 const ProductDetail = ({ navigation, route }) => {
   let IMAGES = [
-    "https://media.coolmate.me/cdn-cgi/image/quality=80/uploads/March2022/tshirtxcool-4-copy.jpg",
+    "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT0akBAMBobdjJlfX5wjHeXzOXh5qG9xdsG2Q&usqp=CAU",
     ,
-    "https://media.coolmate.me/cdn-cgi/image/quality=80/uploads/March2022/4-0.jpg",
+    "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT0akBAMBobdjJlfX5wjHeXzOXh5qG9xdsG2Q&usqp=CAU",
     ,
-    "https://media.coolmate.me/cdn-cgi/image/quality=80/uploads/March2022/tshirtxcool-2-copy.jpg",
-    ,
-    "https://media.coolmate.me/cdn-cgi/image/quality=80/uploads/March2022/tshirtxcool-3-copy.jpg",
-    ,
-    "https://media.coolmate.me/cdn-cgi/image/quality=80/uploads/March2022/IMG_3256.jpg",
-    ,
-    "https://media.coolmate.me/cdn-cgi/image/quality=80/uploads/March2022/tshirtxcool-6-copy.jpg",
+    "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT0akBAMBobdjJlfX5wjHeXzOXh5qG9xdsG2Q&usqp=CAU",
   ];
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState(null);
@@ -148,18 +142,23 @@ const ProductDetail = ({ navigation, route }) => {
           <ScrollView style={styles.listImages}>
             {IMAGES.map((item, index) => (
               <Pressable onPress={() => setShowImage(item)} key={index}>
-                <Image source={{ uri: item }} style={styles.imageItem} />
+                <Image
+                  source={{ uri: item }}
+                  style={styles.imageItem}
+                  resizeMode='contain'
+                />
               </Pressable>
             ))}
           </ScrollView>
           <View style={styles.imageCtn}>
             {product ? (
               <Image
-                // source={require("../../assets/product.jpg")}
                 source={{
-                  uri: showImage,
+                  // uri: showImage,
+                  uri: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT0akBAMBobdjJlfX5wjHeXzOXh5qG9xdsG2Q&usqp=CAU",
                 }}
                 style={styles.image}
+                resizeMode='contain'
               />
             ) : null}
           </View>
@@ -167,11 +166,8 @@ const ProductDetail = ({ navigation, route }) => {
 
         {product ? (
           <View style={styles.content}>
-            <CustomText text={product.productname} style={styles.name} />
-            <CustomText
-              text={format.currency(product.price)}
-              style={styles.price}
-            />
+            <CustomText text='Lò vi sóng thế hệ mới' style={styles.name} />
+            <CustomText text={format.currency(5000000)} style={styles.price} />
             <CustomText text={product.preview} style={styles.description} />
 
             <View
@@ -226,7 +222,7 @@ const ProductDetail = ({ navigation, route }) => {
 
             <View style={styles.button}>
               <Button
-                title={"Add to cart".toUpperCase()}
+                title={"Thêm vào giỏ hàng".toUpperCase()}
                 onPress={addToCart}
                 disabled={
                   value != null &&
@@ -338,6 +334,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   button: {
-    paddingHorizontal: 80,
+    paddingHorizontal: 40,
   },
 });

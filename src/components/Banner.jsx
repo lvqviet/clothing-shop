@@ -45,7 +45,13 @@ const Banner = (props) => {
   const renderItem = ({ item, index }) => {
     return (
       <View style={styles.container} key={index}>
-        <Image source={item.url} style={styles.image} />
+        {/* <Image source={item.url} style={styles.image} /> */}
+        <Image
+          source={{
+            uri: "https://bepnamduong.vn/Data/upload/files/Page/giadung/bn-giadung.jpg",
+          }}
+          style={styles.image}
+        />
         <Text style={styles.title}>{item.title}</Text>
         <Text style={styles.subtitle}>{item.body}</Text>
       </View>

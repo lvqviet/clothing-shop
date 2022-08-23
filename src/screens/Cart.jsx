@@ -92,7 +92,7 @@ const Cart = ({ navigation }) => {
     <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>
       <Loader visible={isLoading} />
       <Header
-        title='Cart'
+        title='Giỏ hàng'
         navigation={navigation}
         showBackButton={true}
         showCartIcon={false}
@@ -129,7 +129,7 @@ const Cart = ({ navigation }) => {
           </View> */}
           <View style={{ width: "80%" }}>
             <Button
-              title='Checkout'
+              title='Đặt hàng'
               disabled={products.length == 0}
               onPress={checkout}
               color={products.length > 0 ? Color.black : Color.grey999999}
@@ -154,10 +154,13 @@ const CartItem = ({ item, onDelete, increaseAmount, decreaseAmount }) => {
       <Image
         source={
           item.product.image.includes("https")
-            ? { uri: item.product.image }
+            ? {
+                uri: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT0akBAMBobdjJlfX5wjHeXzOXh5qG9xdsG2Q&usqp=CAU",
+              }
             : require("../../assets/product.jpg")
         }
         style={styles.image}
+        resizeMode='contain'
       />
       <View
         style={{
@@ -168,22 +171,19 @@ const CartItem = ({ item, onDelete, increaseAmount, decreaseAmount }) => {
       >
         <View style={{ maxWidth: "90%" }}>
           <CustomText
-            text={item.product.productname}
+            text={"Lò vi sóng thế hệ mới"}
             style={styles.name}
             numberOfLines={1}
           />
           <CustomText
-            text={`Size: ${item.size}`}
+            text={`Size: --`}
             style={styles.price}
             numberOfLines={1}
           />
         </View>
 
         <View style={styles.priceCtn}>
-          <CustomText
-            text={format.currency(item.product.price)}
-            style={styles.price}
-          />
+          <CustomText text={format.currency(5000000)} style={styles.price} />
 
           <View style={styles.quantityCtn}>
             <View style={styles.adjust}>

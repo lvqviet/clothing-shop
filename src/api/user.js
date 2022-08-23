@@ -2,10 +2,10 @@ import api from "./api";
 import API_CONSTANTS from "./constants";
 
 export default {
-  getMe: (id) => api.get(API_CONSTANTS.USER.GET_BY_ID(id)),
+  getProfile: () => api.get(API_CONSTANTS.USER.PROFILE),
 
   changePassword: (params) =>
-    api.post(API_CONSTANTS.USER.CHANGE_PASSWORD, params),
+    api.put(API_CONSTANTS.USER.UPDATE_PASSWORD, params),
 
-  update: (id, params) => api.post(API_CONSTANTS.USER.UPDATE(id), params),
+  updateProfile: (params) => api.put(API_CONSTANTS.USER.PROFILE, params),
 };

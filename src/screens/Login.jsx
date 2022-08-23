@@ -2,7 +2,7 @@ import { AntDesign } from "@expo/vector-icons";
 import { useState } from "react";
 import { Alert, Keyboard, SafeAreaView, StyleSheet, View } from "react-native";
 import { useDispatch } from "react-redux";
-import { authApi } from "../api";
+import { authApi, userApi } from "../api";
 import { setNewToken } from "../api/api";
 import { Button, CustomText, Input, Loader } from "../components";
 import Color from "../constants/Color";
@@ -21,15 +21,15 @@ const LoginScreen = ({ navigation }) => {
     Keyboard.dismiss();
     let isValid = true;
     if (!inputs.email) {
-      handleError("Please input email", "email");
+      handleError("Không được để trống", "email");
       isValid = false;
     } else if (!inputs.email.match(Regex.email)) {
-      handleError("Please input a valid email", "email");
+      handleError("Email không hợp lệ", "email");
       isValid = false;
     }
 
     if (!inputs.password) {
-      handleError("Please input password", "password");
+      handleError("Không được để trống", "password");
       isValid = false;
     }
     if (isValid) {
@@ -45,27 +45,17 @@ const LoginScreen = ({ navigation }) => {
         password: inputs.password,
       });
       setLoading(false);
-      if (response.ok && response.data.accessToken) {
-        const { accessToken } = response.data;
-        const { id, email, avatar, username, fullName, contact, address } =
-          response.data.userData;
-        if (accessToken) {
-          await storage.set("token", accessToken);
-          await storage.set("userId", id);
-          setNewToken(accessToken);
-          dispatch(
-            actions.user.login({
-              id: id,
-              email: email,
-              avatar: avatar,
-              userName: username,
-              fullName,
-              contact,
-              address,
-            })
-          );
+      if (response.ok && response.data.token) {
+        const { token } = response.data;
+
+        if (token) {
+          await storage.set("token", token);
+          setNewToken(token);
+          dispatch(actions.user.login({}));
           navigation.goBack();
         }
+      } else if (response.status == 401) {
+        Alert.alert("Sai email hoặc mật khẩu");
       } else {
         Alert.alert(response.data.message);
       }
@@ -89,18 +79,15 @@ const LoginScreen = ({ navigation }) => {
     <SafeAreaView style={styles.container}>
       <Loader visible={loading} />
       <View style={styles.header}>
-        <CustomText style={styles.loginText} text='Log In' />
-        <CustomText
-          style={styles.description}
-          text='Enter Your Details to Login'
-        />
+        <CustomText style={styles.loginText} text='Đăng nhập' />
+        <CustomText style={styles.description} text='Nhập thông tin của bạn' />
         <View style={{ marginVertical: 20 }}>
           <Input
             onChangeText={(text) => handleOnchange(text, "email")}
             onFocus={() => handleError(null, "email")}
             iconName='email-outline'
             label='Email'
-            placeholder='Enter your email address'
+            placeholder='Nhập email'
             error={errors.email}
           />
           <Input
@@ -108,15 +95,15 @@ const LoginScreen = ({ navigation }) => {
             onFocus={() => handleError(null, "password")}
             iconName='lock-outline'
             label='Password'
-            placeholder='Enter your password'
+            placeholder='Nhập password'
             error={errors.password}
             password
           />
-          <Button title='Log In' onPress={validate} />
+          <Button title='Đăng nhập' onPress={validate} />
           <CustomText
             onPress={() => navigation.navigate("REGISTER")}
             style={styles.register}
-            text="Don't have account? Register"
+            text='Chưa có tài khoản? Đăng ký'
           />
 
           <View
@@ -136,7 +123,7 @@ const LoginScreen = ({ navigation }) => {
             <CustomText
               onPress={backToHome}
               style={styles.register}
-              text='Back to Home'
+              text='Về trang chủ'
             />
           </View>
         </View>

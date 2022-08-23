@@ -47,7 +47,7 @@ const Input = ({
         {password && (
           <MaterialCommunityIcons
             onPress={() => setHidePassword(!hidePassword)}
-            name={hidePassword ? "eye-outline" : "eye-off-outline"}
+            name={hidePassword ? "eye-off-outline" : "eye-outline"}
             style={styles.rightIcon}
           />
         )}

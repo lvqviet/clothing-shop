@@ -1,101 +1,64 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
+  Alert,
   Keyboard,
   SafeAreaView,
+  ScrollView,
   StyleSheet,
   View,
-  Image,
-  ScrollView,
-  Alert,
 } from "react-native";
-import { useSelector } from "react-redux";
-import {
-  Button,
-  CustomText,
-  Header,
-  Input,
-  Loader,
-  ModalUploadImage,
-} from "../components";
-import { Feather, Ionicons } from "@expo/vector-icons";
-import Color from "../constants/Color";
-import { useState } from "react";
-import { uploadAvatar } from "../api/uploadImage";
 import { userApi } from "../api";
-import Regex from "../constants/Regex";
-import { useDispatch } from "react-redux";
-import { actions } from "../redux";
+import { Button, Header, Input, Loader } from "../components";
+import Color from "../constants/Color";
 
 const Account = ({ navigation }) => {
-  const { email, userName, fullName, avatar, contact, address, id } =
-    useSelector((state) => state.user);
-
-  const dispatch = useDispatch();
-
   const [inputs, setInputs] = useState({
-    fullname: fullName,
-    phone: contact,
-    address,
+    firstName: "",
+    lastName: "",
   });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
-  const [avatarUrl, setAvatarUrl] = useState(avatar);
+  const [user, setUser] = useState();
 
-  const validate = () => {
-    Keyboard.dismiss();
-    let isValid = true;
-
-    if (!inputs.fullname) {
-      handleError("Please input fullname", "fullname");
-      isValid = false;
-    }
-
-    if (!inputs.phone) {
-      handleError("Please input phone number", "phone");
-      isValid = false;
-    } else if (!inputs.phone.match(Regex.vietnamesePhoneNumber)) {
-      handleError("Please input a valid phone number", "phone");
-      isValid = false;
-    }
-
-    if (!inputs.address) {
-      handleError("Please input address", "address");
-      isValid = false;
-    }
-
-    if (isValid) {
-      updateInfo();
-    }
-  };
-
-  const updateInfo = async (avatarUrl) => {
+  const getProfile = async () => {
     try {
       setLoading(true);
-
-      const response = await userApi.update(id, {
-        fullname: inputs.fullname.trim(),
-        contact: inputs.phone.trim(),
-        address: inputs.address.trim(),
-        avatar: avatarUrl ?? avatar,
-      });
+      const response = await userApi.getProfile();
       setLoading(false);
       if (response.ok) {
-        dispatch(
-          actions.user.update_info({
-            fullName: inputs.fullname.trim(),
-            contact: inputs.phone.trim(),
-            address: inputs.address.trim(),
-            avatar: avatarUrl ?? avatar,
-          })
-        );
-        Alert.alert("Update successfully");
-      } else {
-        Alert.alert("An error occurred");
+        setUser(response.data);
+        setInputs({
+          firstName: response.data.firstName,
+          lastName: response.data.lastName,
+        });
       }
     } catch (error) {
       console.log(error);
     }
   };
+
+  const updateInfo = async () => {
+    try {
+      setLoading(true);
+      const response = await userApi.updateProfile({
+        firstName: inputs.firstName ? inputs.firstName.trim() : user.firstName,
+        lastName: inputs.lastName ? inputs.lastName.trim() : user.lastName,
+      });
+      setLoading(false);
+      if (response.ok) {
+        getProfile();
+        Alert.alert("Cập nhật thành công");
+      } else {
+        Alert.alert("Có lỗi");
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    getProfile();
+  }, []);
 
   const handleOnchange = (text, input) => {
     setInputs((prevState) => ({ ...prevState, [input]: text }));
@@ -104,52 +67,17 @@ const Account = ({ navigation }) => {
     setErrors((prevState) => ({ ...prevState, [input]: error }));
   };
 
-  const updateAvatar = async (image) => {
-    setLoading(true);
-    try {
-      const response = await uploadAvatar(image);
-      setLoading(false);
-      if (response.ok && response.data) {
-        setAvatarUrl(response.data.data.link);
-        await updateInfo(response.data.data.link);
-      } else {
-        console.log("An error occurred");
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>
       <Loader visible={loading} />
       <Header
         showBackButton={true}
         navigation={navigation}
-        title='My Account'
+        title='Tài khoản của tôi'
         showCartIcon={false}
       />
 
       <ScrollView style={styles.container}>
-        <ModalUploadImage onConfirm={updateAvatar}>
-          <View style={styles.containerAvatar}>
-            <Image
-              resizeMode='cover'
-              source={
-                avatarUrl != ""
-                  ? { uri: avatarUrl }
-                  : require("../../assets/icon.png")
-              }
-              style={styles.avatar}
-            />
-            <Feather
-              name='edit'
-              size={24}
-              color={Color.purple717fe0}
-              style={styles.editIcon}
-            />
-          </View>
-        </ModalUploadImage>
         <View
           style={{
             marginVertical: 20,
@@ -160,57 +88,31 @@ const Account = ({ navigation }) => {
         >
           <View>
             <Input
+              onChangeText={(text) => handleOnchange(text, "firstName")}
+              onFocus={() => handleError(null, "firstName")}
+              iconName='account-outline'
+              label='Họ'
+              error={errors.firstName}
+              value={inputs.firstName}
+            />
+
+            <Input
+              onChangeText={(text) => handleOnchange(text, "lastName")}
+              onFocus={() => handleError(null, "lastName")}
+              iconName='account-outline'
+              label='Tên'
+              error={errors.lastName}
+              value={inputs.lastName}
+            />
+
+            <Input
               iconName='email-outline'
               label='Email'
-              value={email}
+              value={user?.email ?? ""}
               editable={false}
             />
-
-            <Input
-              iconName='account-outline'
-              label='User Name'
-              value={userName}
-              editable={false}
-            />
-
-            <Input
-              onChangeText={(text) => handleOnchange(text, "fullname")}
-              onFocus={() => handleError(null, "fullname")}
-              iconName='account-outline'
-              label='Full Name'
-              placeholder='Enter your full name'
-              error={errors.fullname}
-              value={inputs.fullname}
-            />
-
-            <Input
-              keyboardType='numeric'
-              onChangeText={(text) => handleOnchange(text, "phone")}
-              onFocus={() => handleError(null, "phone")}
-              iconName='phone-outline'
-              label='Phone Number'
-              placeholder='Enter your phone number'
-              error={errors.phone}
-              value={inputs.phone}
-            />
-
-            <Input
-              onChangeText={(text) => handleOnchange(text, "address")}
-              onFocus={() => handleError(null, "address")}
-              iconName='home-outline'
-              label='Address'
-              placeholder='Enter your address'
-              error={errors.address}
-              value={inputs.address}
-            />
-
-            {/* <CustomText
-              text='Change Password'
-              style={styles.changePassword}
-              onPress={() => {}}
-            /> */}
           </View>
-          <Button title='Update' onPress={validate} />
+          <Button title='Lưu' onPress={updateInfo} />
         </View>
       </ScrollView>
     </SafeAreaView>

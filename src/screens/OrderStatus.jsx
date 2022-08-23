@@ -135,6 +135,24 @@ const TabBar = ({ active, onChange }) => {
           ]}
         />
       </Pressable>
+
+      <Pressable
+        style={[styles.tab, { borderBottomWidth: active == 3 ? 3 : 0 }]}
+        onPress={() => onChange(3)}
+      >
+        <CustomText
+          onPress={() => onChange(3)}
+          text='Cancelled'
+          style={[
+            styles.tabTitle,
+            {
+              fontFamily:
+                active == 2 ? "Poppins_600SemiBold" : "Poppins_400Regular",
+              color: active == 2 ? Color.purple717fe0 : Color.text,
+            },
+          ]}
+        />
+      </Pressable>
     </View>
   );
 };
@@ -150,7 +168,7 @@ const OrderItem = ({ item, confirmReceived }) => {
   return (
     <View style={styles.orderItem}>
       <CustomText
-        text={`Order date: ${
+        text={`Ngày đặt: ${
           moment(item?.paymentDate).format("HH:mm DD/MM/yyyy") ?? ""
         }`}
         style={styles.date}
@@ -169,7 +187,7 @@ const OrderItem = ({ item, confirmReceived }) => {
       >
         <CustomText text={`Total(${totalAmount}): `} style={styles.total} />
         <CustomText
-          text={format.currency(totalPrice + 23000)}
+          text={format.currency(10000000 + 23000)}
           style={styles.total}
         />
       </View>
@@ -189,7 +207,9 @@ const CartItem = ({ item }) => {
       <Image
         source={
           item.product.image.includes("https")
-            ? { uri: item.product.image }
+            ? {
+                uri: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT0akBAMBobdjJlfX5wjHeXzOXh5qG9xdsG2Q&usqp=CAU",
+              }
             : require("../../assets/product.jpg")
         }
         style={styles.image}
@@ -202,22 +222,17 @@ const CartItem = ({ item }) => {
         }}
       >
         <CustomText
-          text={
-            item?.product?.productname ?? "This is a name of product abc xyz"
-          }
+          text={"Lò vi sóng thế hệ mới"}
           style={styles.name}
           numberOfLines={1}
         />
         <CustomText
-          text={`Size: ${item?.size ?? "XL"}`}
+          text={`Size: ${"--" ?? "XL"}`}
           style={styles.price}
           numberOfLines={1}
         />
         <View style={styles.priceCtn}>
-          <CustomText
-            text={format.currency(item.product.price)}
-            style={styles.price}
-          />
+          <CustomText text={format.currency(5000000)} style={styles.price} />
           <CustomText text={`x ${item?.amount ?? 2}`} style={styles.price} />
         </View>
       </View>

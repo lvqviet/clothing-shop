@@ -1,6 +1,6 @@
 import { create } from "apisauce";
 
-const baseURL = "https://clothingshop-api.herokuapp.com";
+const baseURL = "https://houseware-ecommerce.herokuapp.com";
 
 const api = create({ baseURL });
 

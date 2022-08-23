@@ -109,7 +109,7 @@ const Checkout = ({ navigation }) => {
     <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>
       <Loader visible={loading} />
       <Header
-        title='Checkout'
+        title='Đặt hàng'
         navigation={navigation}
         showBackButton={true}
         showCartIcon={false}
@@ -119,8 +119,8 @@ const Checkout = ({ navigation }) => {
           <Input
             onChangeText={(text) => handleOnchange(text, "name")}
             onFocus={() => handleError(null, "name")}
-            label='Name'
-            placeholder='Enter your name'
+            label='Tên'
+            placeholder='Nhập tên'
             error={errors.name}
             value={inputs.name}
           />
@@ -129,16 +129,16 @@ const Checkout = ({ navigation }) => {
             keyboardType='numeric'
             onChangeText={(text) => handleOnchange(text, "phone")}
             onFocus={() => handleError(null, "phone")}
-            label='Phone Number'
-            placeholder='Enter your phone number'
+            label='Số điện thoại'
+            placeholder='Nhập số điện thoại'
             error={errors.phone}
             value={inputs.phone}
           />
           <Input
             onChangeText={(text) => handleOnchange(text, "address")}
             onFocus={() => handleError(null, "address")}
-            label='Address'
-            placeholder='Enter your address'
+            label='Địa chỉ'
+            placeholder='Nhập địa chỉ'
             error={errors.address}
             value={inputs.address}
           />
@@ -155,7 +155,7 @@ const Checkout = ({ navigation }) => {
             justifyContent: "space-between",
           }}
         >
-          <CustomText text='Subtotal:' style={[styles.totalPrice]} />
+          <CustomText text='Tạm tính:' style={[styles.totalPrice]} />
           <CustomText
             text={format.currency(totalPrice)}
             style={styles.totalPrice}
@@ -167,7 +167,7 @@ const Checkout = ({ navigation }) => {
             justifyContent: "space-between",
           }}
         >
-          <CustomText text='Shipping:' style={[styles.totalPrice]} />
+          <CustomText text='Phí ship:' style={[styles.totalPrice]} />
           <CustomText text={format.currency(23000)} style={styles.totalPrice} />
         </View>
         <View
@@ -176,7 +176,7 @@ const Checkout = ({ navigation }) => {
             justifyContent: "space-between",
           }}
         >
-          <CustomText text={`Total(${totalAmount})`} style={styles.total} />
+          <CustomText text={`Tổng(${totalAmount})`} style={styles.total} />
           <CustomText
             text={format.currency(totalPrice + 23000)}
             style={styles.total}
@@ -200,10 +200,13 @@ const CartItem = ({ item }) => {
       <Image
         source={
           item.product.image.includes("https")
-            ? { uri: item.product.image }
+            ? {
+                uri: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT0akBAMBobdjJlfX5wjHeXzOXh5qG9xdsG2Q&usqp=CAU",
+              }
             : require("../../assets/product.jpg")
         }
         style={styles.image}
+        resizeMode='contain'
       />
       <View
         style={{
@@ -213,7 +216,7 @@ const CartItem = ({ item }) => {
         }}
       >
         <CustomText
-          text={item.product.productname}
+          text={"Lò vi sóng thế hệ mới"}
           style={styles.name}
           numberOfLines={1}
         />

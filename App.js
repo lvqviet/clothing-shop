@@ -21,6 +21,7 @@ import store from "./src/redux/store";
 import {
   Account,
   Cart,
+  ChangePassword,
   Checkout,
   Login,
   OrderStatus,
@@ -55,6 +56,11 @@ const ProtectedRoutes = [
   {
     name: "ACCOUNT",
     component: Account,
+    headerShown: false,
+  },
+  {
+    name: "CHANGE_PASSWORD",
+    component: ChangePassword,
     headerShown: false,
   },
   {

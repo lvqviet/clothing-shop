@@ -3,11 +3,8 @@ import { createSlice } from "@reduxjs/toolkit";
 const initialState = {
   id: "",
   email: "",
-  avatar: "",
-  userName: "",
-  fullName: "",
-  contact: "",
-  address: "",
+  firstName: "",
+  lastName: "",
   isLogin: false,
 };
 
@@ -16,28 +13,28 @@ const slice = createSlice({
   initialState,
   reducers: {
     login: (state, action) => {
-      const { id, email, avatar, userName, fullName, contact, address } =
-        action.payload;
+      // const { id, email, avatar, userName, fullName, contact, address } =
+      //   action.payload;
 
       return {
         ...state,
         isLogin: true,
-        id,
-        email,
-        avatar,
-        userName,
-        fullName,
-        contact,
-        address,
+        // id,
+        // email,
+        // avatar,
+        // userName,
+        // fullName,
+        // contact,
+        // address,
       };
     },
     logout: (state, action) => {
       return { ...state, isLogin: false };
     },
     update_info: (state, action) => {
-      const { fullName, contact, address, avatar } = action.payload;
+      const { firstName, lastName } = action.payload;
 
-      return { ...state, fullName, contact, address, avatar };
+      return { ...state, firstName, lastName };
     },
   },
 });

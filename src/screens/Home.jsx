@@ -75,9 +75,9 @@ const Home = ({ navigation }) => {
 
         const listTypes = new Set();
         listTypes.add("All Products");
-        for (let i = 0; i < productsData.length; i++) {
-          listTypes.add(productsData[i].productType);
-        }
+        // for (let i = 0; i < productsData.length; i++) {
+        //   listTypes.add(productsData[i].productType);
+        // }
         setProductTypes(Array.from(listTypes));
       } else {
         Alert.alert(response.data.message);
@@ -151,16 +151,6 @@ const Home = ({ navigation }) => {
                 ))}
               </View>
             ) : null}
-
-            {/* <TouchableOpacity
-              style={styles.filter}
-              onPress={() => console.log("cc")}
-            >
-              <Ionicons name='ios-filter' size={20} color={Color.text} />
-              <Text style={styles.textFilter}>
-                {lowToHigh ? "Low to High" : "High to Low"}
-              </Text>
-            </TouchableOpacity> */}
           </View>
 
           <View style={styles.listProduct}>
@@ -174,9 +164,14 @@ const Home = ({ navigation }) => {
               .map((item, index) => (
                 <ProductItem
                   key={index}
-                  title={item.productname}
-                  price={item.price}
-                  image={item.image}
+                  // title={item.productname}
+                  // image={item.image}
+                  // price={item.price}
+                  price={5000000}
+                  title={"Lò vi sóng thế hệ mới"}
+                  image={
+                    "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT0akBAMBobdjJlfX5wjHeXzOXh5qG9xdsG2Q&usqp=CAU"
+                  }
                   onPress={() => onPressItem(item._id)}
                 />
               ))}

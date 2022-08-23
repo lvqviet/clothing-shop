@@ -13,14 +13,15 @@ import { storage } from "../helper";
 import { actions } from "../redux";
 
 const menuProfileAuth = [
-  { title: "My Account", screen: "ACCOUNT" },
-  { title: "Order Status", screen: "ORDER_STATUS" },
-  { title: "Log Out", screen: "" },
+  { title: "Tài khoản của tôi", screen: "ACCOUNT" },
+  { title: "Trạng thái đơn hàng", screen: "ORDER_STATUS" },
+  { title: "Đổi mật khẩu", screen: "CHANGE_PASSWORD" },
+  { title: "Đăng xuất", screen: "" },
 ];
 
 const menuProfile = [
-  { title: "Log In", screen: "LOGIN" },
-  { title: "Help", screen: "" },
+  { title: "Đăng nhập", screen: "LOGIN" },
+  { title: "Thông tin", screen: "" },
 ];
 
 const Profile = ({ navigation }) => {
@@ -85,7 +86,7 @@ const MenuItem = ({ title, screen, navigation }) => {
         text={title}
         style={[
           styles.title,
-          { color: title === "Log Out" ? Color.error : Color.text },
+          { color: title === "Đăng xuất" ? Color.error : Color.text },
         ]}
         onPress={onPress}
       />
