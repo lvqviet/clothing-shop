@@ -18,14 +18,14 @@ const API_CONSTANTS = {
     GET_BY_ID: (id) => `categories/${id}`,
   },
   CART: {
-    GET: (id) => `cart/get-by-userId/${id}`,
-    CREATE: "cart",
-    UPDATE: (id) => `cart/${id}`,
+    GET: "users/me/cart",
+    UPDATE: "users/me/cart",
   },
   ORDER: {
-    CREATE: "order",
-    UPDATE_STATUS: (id) => `order/${id}`,
-    GET_ALL: (id) => `order/get-by-userId/${id}`,
+    CHECKOUT: "orders",
+    GET_ALL: "orders",
+    GET_BY_ID: (id) => `orders/${id}`,
+    CANCEL: (id) => `orders/${id}/cancel`,
   },
 };
 

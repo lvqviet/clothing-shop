@@ -4,6 +4,7 @@ import {
   Alert,
   Dimensions,
   Image,
+  Pressable,
   SafeAreaView,
   ScrollView,
   StyleSheet,
@@ -19,7 +20,7 @@ import { actions } from "../redux";
 
 const width = Dimensions.get("screen").width;
 const Cart = ({ navigation }) => {
-  const { products, totalPrice, totalAmount, id } = useSelector(
+  const { items, totalPrice, totalQuantity } = useSelector(
     (state) => state.cart
   );
   const dispatch = useDispatch();
@@ -27,9 +28,9 @@ const Cart = ({ navigation }) => {
   const [isLoading, setIsLoading] = useState(false);
 
   function showConfirmDelete(item) {
-    Alert.alert("Delete selected item?", "", [
+    Alert.alert("Xoá sản phẩm khỏi giỏ hàng?", "", [
       {
-        text: "Cancel",
+        text: "Huỷ",
         style: "cancel",
       },
       {
@@ -44,38 +45,36 @@ const Cart = ({ navigation }) => {
   }
 
   function increaseAmount(item) {
-    const { productInfo } = item.product;
-    const maxQuantity =
-      productInfo[productInfo.findIndex((e) => e.size == item.size)].amount;
-    if (item.amount >= maxQuantity) return;
+    if (item.quantity >= item.product.quantity) return;
     dispatch(actions.cart.increase_amount({ item }));
   }
 
   function decreaseAmount(item) {
-    if (item.amount == 1) return;
+    if (item.quantity == 1) {
+      showConfirmDelete(item);
+      return;
+    }
     dispatch(actions.cart.decrease_amount({ item }));
   }
 
   async function checkout() {
-    // await updateCart();
     navigation.navigate("CHECKOUT");
   }
 
   async function updateCart() {
     try {
       setIsLoading(true);
-      const genProducts = products.map((item) => {
+      const genItems = items.map((item) => {
         return {
           productId: item.product._id,
-          amount: item.amount,
-          size: item.size,
+          quantity: item.quantity,
         };
       });
-      const params = { detail: genProducts, status: 0 };
-      const response = await cartApi.update(id, params);
+      const params = { items: genItems };
+      const response = await cartApi.update(params);
       setIsLoading(false);
-      if (response.ok && response.data) {
-        // Alert.alert("Saved");
+      if (response.ok) {
+        //
       } else {
         Alert.alert(response.data.message);
       }
@@ -86,7 +85,7 @@ const Cart = ({ navigation }) => {
 
   useEffect(() => {
     updateCart();
-  }, [products]);
+  }, [items]);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>
@@ -98,10 +97,10 @@ const Cart = ({ navigation }) => {
         showCartIcon={false}
       />
       <ScrollView style={{ marginTop: 45, paddingTop: 10 }}>
-        {products.map((item, index) => (
+        {items.map((item, index) => (
           <CartItem
             item={item}
-            key={index}
+            key={item.product._id}
             onDelete={() => showConfirmDelete(item)}
             increaseAmount={() => increaseAmount(item)}
             decreaseAmount={() => decreaseAmount(item)}
@@ -115,24 +114,16 @@ const Cart = ({ navigation }) => {
             justifyContent: "space-between",
           }}
         >
-          <CustomText text={`Total(${totalAmount})`} style={styles.total} />
+          <CustomText text={`Total(${totalQuantity})`} style={styles.total} />
           <CustomText text={format.currency(totalPrice)} style={styles.total} />
         </View>
         <View style={{ flexDirection: "row", justifyContent: "space-around" }}>
-          {/* <View style={{ width: "45%" }}>
-            <Button
-              title='Save Cart'
-              disabled={products.length == 0}
-              onPress={updateCart}
-              color={products.length > 0 ? Color.black : Color.grey999999}
-            />
-          </View> */}
           <View style={{ width: "80%" }}>
             <Button
               title='Đặt hàng'
-              disabled={products.length == 0}
+              disabled={totalQuantity == 0}
               onPress={checkout}
-              color={products.length > 0 ? Color.black : Color.grey999999}
+              color={totalQuantity > 0 ? Color.black : Color.grey999999}
             />
           </View>
         </View>
@@ -142,6 +133,11 @@ const Cart = ({ navigation }) => {
 };
 
 const CartItem = ({ item, onDelete, increaseAmount, decreaseAmount }) => {
+  const [isSelected, setIsSelected] = useState(false);
+
+  const onSelected = () => {
+    setIsSelected(!isSelected);
+  };
   return (
     <View style={styles.cartItem}>
       <Ionicons
@@ -151,11 +147,19 @@ const CartItem = ({ item, onDelete, increaseAmount, decreaseAmount }) => {
         style={styles.close}
         onPress={onDelete}
       />
+
+      <Ionicons
+        onPress={onSelected}
+        name={isSelected ? "checkbox" : "square-outline"}
+        size={20}
+        style={{ padding: 6, alignSelf: "center" }}
+      />
+
       <Image
         source={
-          item.product.image.includes("https")
+          item.product.pictures[0].includes("https")
             ? {
-                uri: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT0akBAMBobdjJlfX5wjHeXzOXh5qG9xdsG2Q&usqp=CAU",
+                uri: item.product.pictures[0],
               }
             : require("../../assets/product.jpg")
         }
@@ -164,26 +168,24 @@ const CartItem = ({ item, onDelete, increaseAmount, decreaseAmount }) => {
       />
       <View
         style={{
-          maxWidth: width - 120,
+          maxWidth: width - 140,
           paddingHorizontal: 10,
           justifyContent: "space-between",
         }}
       >
         <View style={{ maxWidth: "90%" }}>
           <CustomText
-            text={"Lò vi sóng thế hệ mới"}
+            text={item.product.name}
             style={styles.name}
-            numberOfLines={1}
-          />
-          <CustomText
-            text={`Size: --`}
-            style={styles.price}
             numberOfLines={1}
           />
         </View>
 
         <View style={styles.priceCtn}>
-          <CustomText text={format.currency(5000000)} style={styles.price} />
+          <CustomText
+            text={format.currency(item.product.price)}
+            style={styles.price}
+          />
 
           <View style={styles.quantityCtn}>
             <View style={styles.adjust}>
@@ -195,7 +197,7 @@ const CartItem = ({ item, onDelete, increaseAmount, decreaseAmount }) => {
               />
             </View>
             <View style={styles.amountCtn}>
-              <CustomText text={item.amount} style={styles.amount} />
+              <CustomText text={item.quantity} style={styles.amount} />
             </View>
             <View style={styles.adjust}>
               <Feather

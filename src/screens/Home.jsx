@@ -17,30 +17,13 @@ import Color from "../constants/Color";
 import { actions } from "../redux";
 
 const Home = ({ navigation }) => {
-  const [categorySelected, setCategorySelected] = useState("All Products");
+  const [categorySelected, setCategorySelected] = useState("Tất cả");
   const [isLoading, setIsLoading] = useState(false);
   const [products, setProducts] = useState([]);
-  const [productTypes, setProductTypes] = useState([]);
-  const [pageInfo, setPageInfo] = useState({
-    page: 0,
-    pageSize: 10,
-    isLastPage: false,
-  });
+  const [categories, setCategories] = useState([]);
 
-  const { id, isLogin } = useSelector((state) => state.user);
+  const { isLogin } = useSelector((state) => state.user);
   const dispatch = useDispatch();
-
-  const isCloseToBottom = ({
-    layoutMeasurement,
-    contentOffset,
-    contentSize,
-  }) => {
-    const paddingToBottom = 20;
-    return (
-      layoutMeasurement.height + contentOffset.y >=
-      contentSize.height - paddingToBottom
-    );
-  };
 
   const onPressItem = (id) => {
     navigation.navigate("PRODUCT_DETAIL", { id });
@@ -48,37 +31,12 @@ const Home = ({ navigation }) => {
 
   async function getProducts() {
     try {
-      if (pageInfo.isLastPage || isLoading) {
-        return;
-      }
       setIsLoading(true);
-      const response = await productApi.getProducts(
-        pageInfo.page,
-        pageInfo.pageSize
-      );
+      const response = await productApi.getProducts();
       setIsLoading(false);
-      if (response.ok && response.data.product) {
-        const productsData = response.data.product;
-        const total = response.data.total;
-
-        if (pageInfo.page == 0 || products.length == 0) {
-          setProducts(productsData);
-        } else {
-          setProducts([...products, ...productsData]);
-        }
-
-        setPageInfo({
-          ...pageInfo,
-          page: pageInfo.page + 1,
-          isLastPage: total <= (pageInfo.page + 1) * pageInfo.pageSize,
-        });
-
-        const listTypes = new Set();
-        listTypes.add("All Products");
-        // for (let i = 0; i < productsData.length; i++) {
-        //   listTypes.add(productsData[i].productType);
-        // }
-        setProductTypes(Array.from(listTypes));
+      if (response.ok) {
+        const productsData = response.data;
+        setProducts(productsData);
       } else {
         Alert.alert(response.data.message);
       }
@@ -87,13 +45,26 @@ const Home = ({ navigation }) => {
     }
   }
 
+  async function getCategories() {
+    try {
+      setIsLoading(true);
+      const res = await productApi.getCategories();
+      setIsLoading(false);
+      if (res.ok) {
+        setCategories([{ name: "Tất cả", _id: "Tất cả" }, ...res.data]);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
   async function getCart() {
     try {
-      const response = await cartApi.get(id);
-      if (response.ok) {
-        dispatch(actions.cart.get_cart(response.data));
+      const response = await cartApi.get();
+      if (response.ok && response.data) {
+        dispatch(actions.cart.get_cart({ items: response.data }));
       } else {
-        // Alert.alert(response.data.message);
+        Alert.alert(response.data.message);
       }
     } catch (error) {
       console.log(error);
@@ -102,47 +73,40 @@ const Home = ({ navigation }) => {
 
   useEffect(() => {
     getProducts();
-  }, []);
+    getCategories();
 
-  useEffect(() => {
-    if (isLogin) getCart();
+    if (isLogin) {
+      getCart();
+    }
   }, [isLogin]);
 
   return (
     <SafeAreaView style={styles.container}>
       <Loader visible={isLoading} />
       <Header navigation={navigation} />
-      <ScrollView
-        style={styles.scrollCtn}
-        onScroll={({ nativeEvent }) => {
-          if (isCloseToBottom(nativeEvent)) {
-            getProducts();
-          }
-        }}
-        scrollEventThrottle={400}
-      >
+      <ScrollView style={styles.scrollCtn}>
         <View style={styles.content}>
           <Banner />
 
           <View style={styles.overviewCtn}>
             <CustomText
-              text={"Product Overview".toUpperCase()}
+              text={"Danh sách sản phẩm".toUpperCase()}
               style={styles.overviewText}
             />
-            {productTypes ? (
+            {categories ? (
               <View style={styles.categories}>
-                {productTypes.map((item, index) => (
+                {categories.map((item, index) => (
                   <CustomText
-                    text={item}
+                    text={item.name}
                     key={index}
-                    onPress={() => setCategorySelected(item)}
+                    onPress={() => setCategorySelected(item._id)}
                     style={[
                       styles.category,
                       {
                         textDecorationLine:
-                          categorySelected == item ? "underline" : "none",
+                          categorySelected == item._id ? "underline" : "none",
                         color:
-                          categorySelected == item
+                          categorySelected == item._id
                             ? Color.text
                             : Color.grey999999,
                       },
@@ -156,22 +120,17 @@ const Home = ({ navigation }) => {
           <View style={styles.listProduct}>
             {products
               .filter((e) => {
-                if (categorySelected === "All Products") return true;
+                if (categorySelected === "Tất cả") return true;
                 else {
-                  return e.productType == categorySelected;
+                  return e.category == categorySelected;
                 }
               })
               .map((item, index) => (
                 <ProductItem
-                  key={index}
-                  // title={item.productname}
-                  // image={item.image}
-                  // price={item.price}
-                  price={5000000}
-                  title={"Lò vi sóng thế hệ mới"}
-                  image={
-                    "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT0akBAMBobdjJlfX5wjHeXzOXh5qG9xdsG2Q&usqp=CAU"
-                  }
+                  key={item._id}
+                  title={item.name}
+                  image={item.pictures[0]}
+                  price={item.price}
                   onPress={() => onPressItem(item._id)}
                 />
               ))}

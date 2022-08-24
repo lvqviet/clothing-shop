@@ -30,69 +30,63 @@ const ProductDetail = ({ navigation, route }) => {
     ,
     "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT0akBAMBobdjJlfX5wjHeXzOXh5qG9xdsG2Q&usqp=CAU",
   ];
-  const [open, setOpen] = useState(false);
-  const [value, setValue] = useState(null);
-  const [listSize, setListSize] = useState([]);
+  const [images, setImages] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [product, setProduct] = useState();
-  const [amount, setAmount] = useState(1);
+  const [quantity, setQuantity] = useState(1);
   const [showImage, setShowImage] = useState(IMAGES[0]);
 
   const { id } = route.params;
   const { isLogin } = useSelector((state) => state.user);
-  const { products, totalAmount } = useSelector((state) => state.cart);
+  const { items } = useSelector((state) => state.cart);
 
   const dispatch = useDispatch();
 
   const increase = () => {
-    if (!value) {
-      Alert.alert("Please select size of item");
-      return;
-    }
-    if (
-      amount <
-      listSize[listSize.findIndex((e) => e.value == value)].origin.amount
-    )
-      setAmount(amount + 1);
+    if (quantity < product.quantity) setQuantity(quantity + 1);
   };
 
   const decrease = () => {
-    if (!value) {
-      Alert.alert("Please select size of item");
-      return;
-    }
-    if (amount > 1) setAmount(amount - 1);
+    if (quantity > 1) setQuantity(quantity - 1);
   };
 
   const addToCart = () => {
-    if (!value) {
-      Alert.alert("Please select size of item");
-      return;
-    }
     if (!isLogin) {
       navigation.navigate("LOGIN");
       return;
     }
 
-    dispatch(actions.cart.add_to_cart({ product, amount, size: value }));
+    const findIndex = items.findIndex((e) => e.product._id == product._id);
+    // console.log(items, findIndex);
+    if (findIndex == -1 && quantity > product.quantity) {
+      Alert.alert("Không thể thêm vào giỏ vượt quá số lượng sản phẩm");
+      return;
+    } else if (
+      findIndex != -1 &&
+      quantity + items[findIndex].quantity > product.quantity
+    ) {
+      Alert.alert("Không thể thêm vào giỏ vượt quá số lượng sản phẩm");
+      return;
+    }
+
+    dispatch(actions.cart.add_to_cart({ product, quantity }));
     updateCart();
   };
 
   async function updateCart() {
     try {
       setIsLoading(true);
-      const genProducts = products.map((item) => {
+      const genItems = items.map((item) => {
         return {
           productId: item.product._id,
-          amount: item.amount,
-          size: item.size,
+          quantity: item.quantity,
         };
       });
-      const params = { detail: genProducts, status: 0 };
-      const response = await cartApi.update(id, params);
+      const params = { items: genItems };
+      const response = await cartApi.update(params);
       setIsLoading(false);
-      if (response.ok && response.data) {
-        Alert.alert("Added");
+      if (response.ok) {
+        Alert.alert("Đã thêm vào giỏ hàng");
       } else {
         Alert.alert(response.data.message);
       }
@@ -110,22 +104,15 @@ const ProductDetail = ({ navigation, route }) => {
         if (response.ok && response.data) {
           setProduct(response.data);
 
-          const listSize = response.data.productInfo.map((e) => ({
-            label: e.size,
-            value: e.size,
-            origin: e,
-          }));
-          setListSize(listSize);
-
-          if (response.data?.image.includes("https")) {
-            IMAGES.unshift(response.data.image);
+          if (response.data?.pictures[0].includes("https")) {
+            IMAGES.unshift(response.data.pictures[0]);
             setShowImage(IMAGES[0]);
+            setImages(IMAGES);
           }
         } else {
           Alert.alert(response.data.message);
         }
       } catch (error) {
-        Alert.alert("An error occurred");
         console.log(error);
       }
     }
@@ -133,14 +120,25 @@ const ProductDetail = ({ navigation, route }) => {
     getProduct();
   }, []);
 
+  // useEffect(() => {
+  //   console.log(items);
+  //   console.log("====================================");
+  //   console.log(totalPrice);
+  //   console.log("====================================");
+  //   console.log(totalQuantity);
+  // }, [items]);
+
   return (
     <SafeAreaView style={styles.container}>
       <Loader visible={isLoading} />
       <Header navigation={navigation} showBackButton={true} />
       <View style={styles.scrollCtn}>
         <View style={styles.preview}>
-          <ScrollView style={styles.listImages}>
-            {IMAGES.map((item, index) => (
+          <ScrollView
+            style={styles.listImages}
+            showsVerticalScrollIndicator={false}
+          >
+            {images.map((item, index) => (
               <Pressable onPress={() => setShowImage(item)} key={index}>
                 <Image
                   source={{ uri: item }}
@@ -154,8 +152,7 @@ const ProductDetail = ({ navigation, route }) => {
             {product ? (
               <Image
                 source={{
-                  // uri: showImage,
-                  uri: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT0akBAMBobdjJlfX5wjHeXzOXh5qG9xdsG2Q&usqp=CAU",
+                  uri: showImage,
                 }}
                 style={styles.image}
                 resizeMode='contain'
@@ -166,75 +163,43 @@ const ProductDetail = ({ navigation, route }) => {
 
         {product ? (
           <View style={styles.content}>
-            <CustomText text='Lò vi sóng thế hệ mới' style={styles.name} />
-            <CustomText text={format.currency(5000000)} style={styles.price} />
-            <CustomText text={product.preview} style={styles.description} />
+            <CustomText text={product.name} style={styles.name} />
+            <CustomText
+              text={format.currency(product.price)}
+              style={styles.price}
+            />
+            <CustomText text={product.description} style={styles.description} />
 
             <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                marginTop: 20,
-                zIndex: 100,
-              }}
+              style={{ flexDirection: "row", justifyContent: "space-between" }}
             >
-              <CustomText text='Size' style={styles.option} />
-              <DropDownPicker
-                open={open}
-                value={value}
-                items={listSize}
-                setOpen={setOpen}
-                setValue={setValue}
-                setItems={setListSize}
-                style={{
-                  borderRadius: 1,
-                  borderColor: Color.greye6e6e6,
-                  maxWidth: 250,
-                }}
-                disableBorderRadius={true}
-                containerStyle={{
-                  width: 250,
-                }}
-              />
-            </View>
-
-            {value != null ? (
               <CustomText
                 text={`Kho: ${
-                  listSize[listSize.findIndex((e) => e.value == value)].origin
-                    .amount
+                  product?.quantity == 0 ? "Hết hàng" : product?.quantity
                 }`}
-                style={{ marginLeft: 80, marginTop: 10, fontSize: 14 }}
+                style={{ marginTop: 10, fontSize: 14 }}
               />
-            ) : null}
 
-            <View style={styles.quantityCtn}>
-              <TouchableOpacity style={styles.adjust} onPress={decrease}>
-                <Feather name='minus' size={18} color='black' />
-              </TouchableOpacity>
-              <View style={styles.amountCtn}>
-                <CustomText text={amount} style={styles.amount} />
+              <View style={styles.quantityCtn}>
+                <TouchableOpacity style={styles.adjust} onPress={decrease}>
+                  <Feather name='minus' size={18} color='black' />
+                </TouchableOpacity>
+                <View style={styles.amountCtn}>
+                  <CustomText text={quantity} style={styles.amount} />
+                </View>
+                <TouchableOpacity style={styles.adjust} onPress={increase}>
+                  <Feather name='plus' size={18} color='black' />
+                </TouchableOpacity>
               </View>
-              <TouchableOpacity style={styles.adjust} onPress={increase}>
-                <Feather name='plus' size={18} color='black' />
-              </TouchableOpacity>
             </View>
 
             <View style={styles.button}>
               <Button
                 title={"Thêm vào giỏ hàng".toUpperCase()}
                 onPress={addToCart}
-                disabled={
-                  value != null &&
-                  listSize[listSize.findIndex((e) => e.value == value)].origin
-                    .amount == 0
-                }
+                disabled={product?.quantity == 0}
                 color={
-                  value != null &&
-                  listSize[listSize.findIndex((e) => e.value == value)].origin
-                    .amount == 0
-                    ? Color.grey999999
-                    : Color.purple717fe0
+                  product?.quantity == 0 ? Color.grey999999 : Color.purple717fe0
                 }
               />
             </View>
@@ -298,6 +263,7 @@ const styles = StyleSheet.create({
   description: {
     fontFamily: "Poppins_400Regular",
     fontSize: 16,
+    marginBottom: 20,
   },
   option: {
     fontSize: 16,
@@ -309,8 +275,6 @@ const styles = StyleSheet.create({
     height: 40,
     borderRadius: 1,
     borderWidth: 1,
-    marginLeft: 80,
-    marginTop: 20,
     flexDirection: "row",
     borderColor: Color.greye6e6e6,
     alignSelf: "flex-start",
@@ -335,5 +299,6 @@ const styles = StyleSheet.create({
   },
   button: {
     paddingHorizontal: 40,
+    marginTop: 20,
   },
 });

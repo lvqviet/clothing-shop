@@ -6,7 +6,7 @@ import CustomText from "./CustomText";
 
 export default function Cart({ navigation }) {
   const { isLogin } = useSelector((state) => state.user);
-  const { totalAmount } = useSelector((state) => state.cart);
+  const { totalQuantity } = useSelector((state) => state.cart);
 
   function onPress() {
     if (isLogin) navigation.navigate("CART");
@@ -16,7 +16,7 @@ export default function Cart({ navigation }) {
     <View style={styles.icon}>
       <Entypo name='shopping-cart' size={24} color='black' onPress={onPress} />
       <View style={styles.amountCtn}>
-        <CustomText text={totalAmount} style={styles.amount} />
+        <CustomText text={totalQuantity} style={styles.amount} />
       </View>
     </View>
   );

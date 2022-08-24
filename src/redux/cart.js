@@ -1,9 +1,8 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
-  id: "",
-  products: [],
-  totalAmount: 0,
+  items: [],
+  totalQuantity: 0,
   totalPrice: 0,
 };
 
@@ -12,97 +11,79 @@ const slice = createSlice({
   initialState,
   reducers: {
     get_cart: (state, action) => {
-      const { detail, _id } = action.payload;
-      let totalAmount = 0,
+      const { items } = action.payload;
+      console.log(items);
+      let totalQuantity = 0,
         totalPrice = 0;
 
-      detail.forEach((item) => {
-        totalAmount += item.amount;
-        totalPrice += item.product.price * item.amount;
+      items.forEach((item) => {
+        totalQuantity += item.quantity;
+        totalPrice += item.product.price * item.quantity;
       });
 
-      let products = detail.map((e) => {
-        return {
-          product: e.product,
-          amount: e.amount,
-          size: e.size,
-        };
-      });
-
-      return { ...state, totalAmount, totalPrice, products, id: _id };
+      return { ...state, totalQuantity, totalPrice, items };
     },
     add_to_cart: (state, action) => {
-      const { product, amount, size } = action.payload;
-      let cloneProducts = [...state.products];
-      const findIndex = state.products.findIndex(
+      const { product, quantity } = action.payload;
+      let cloneItems = [...state.items];
+      const findIndex = state.items.findIndex(
         (e) => e.product._id == product._id
       );
 
       if (findIndex == -1) {
-        cloneProducts.push({ product, amount, size });
-      } else if (state.products[findIndex].size == size) {
-        cloneProducts = [...cloneProducts].map((item, index) => {
-          if (index == findIndex)
-            return { ...item, amount: item.amount + amount };
+        cloneItems.push({ product, quantity });
+      } else {
+        cloneItems = cloneItems.map((item, index) => {
+          if (findIndex == index)
+            return { ...item, quantity: item.quantity + quantity };
           return item;
         });
-      } else {
-        const index = state.products.findIndex(
-          (e) => e.product._id == product._id && e.size == size
-        );
-
-        if (index != -1) {
-          cloneProducts = [...cloneProducts].map((item, idx) => {
-            if (index == idx) return { ...item, amount: item.amount + amount };
-            return item;
-          });
-        } else cloneProducts.push({ product, amount, size });
       }
 
-      const totalAmount = state.totalAmount + amount;
-      const totalPrice = state.totalPrice + amount * product.price;
+      const totalQuantity = state.totalQuantity + quantity;
+      const totalPrice = state.totalPrice + quantity * product.price;
 
-      return { ...state, totalAmount, totalPrice, products: cloneProducts };
+      return { ...state, totalQuantity, totalPrice, items: cloneItems };
     },
     delete_item: (state, action) => {
       const { item } = action.payload;
-      const cloneProducts = state.products.filter(
-        (e) => !(e.product._id == item.product._id && e.size == item.size)
+      const cloneItems = state.items.filter(
+        (e) => e.product._id != item.product._id
       );
 
-      const totalAmount = state.totalAmount - item.amount;
-      const totalPrice = state.totalPrice - item.amount * item.product.price;
+      const totalQuantity = state.totalQuantity - item.quantity;
+      const totalPrice = state.totalPrice - item.quantity * item.product.price;
 
-      return { ...state, totalAmount, totalPrice, products: cloneProducts };
+      return { ...state, totalQuantity, totalPrice, items: cloneItems };
     },
     increase_amount: (state, action) => {
       const { item } = action.payload;
-      const cloneProducts = state.products.map((e) => {
-        if (e.product._id == item.product._id && e.size == item.size)
-          return { ...e, amount: e.amount + 1 };
+      const cloneItems = state.items.map((e) => {
+        if (e.product._id == item.product._id)
+          return { ...e, quantity: e.quantity + 1 };
         return e;
       });
 
-      const totalAmount = state.totalAmount + 1;
+      const totalQuantity = state.totalQuantity + 1;
       const totalPrice = state.totalPrice + item.product.price;
 
-      return { ...state, totalAmount, totalPrice, products: cloneProducts };
+      return { ...state, totalQuantity, totalPrice, items: cloneItems };
     },
     decrease_amount: (state, action) => {
       const { item } = action.payload;
-      const cloneProducts = state.products.map((e) => {
-        if (e.product._id == item.product._id && e.size == item.size)
-          return { ...e, amount: e.amount - 1 };
+      const cloneItems = state.items.map((e) => {
+        if (e.product._id == item.product._id)
+          return { ...e, quantity: e.quantity - 1 };
         return e;
       });
 
-      const totalAmount = state.totalAmount - 1;
+      const totalQuantity = state.totalQuantity - 1;
       const totalPrice = state.totalPrice - item.product.price;
 
-      return { ...state, totalAmount, totalPrice, products: cloneProducts };
+      return { ...state, totalQuantity, totalPrice, items: cloneItems };
     },
     clear: (state, action) => {
-      return { ...state, products: [], totalAmount: 0, totalPrice: 0 };
+      return { ...state, items: [], totalQuantity: 0, totalPrice: 0 };
     },
   },
 });

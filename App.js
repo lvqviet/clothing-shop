@@ -7,16 +7,12 @@ import {
 } from "@expo-google-fonts/poppins";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { useState } from "react";
 import { useEffect } from "react";
 import { Alert, Text, View } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import { Provider, useDispatch } from "react-redux";
-import { userApi } from "./src/api";
+import { Provider } from "react-redux";
 import { setNewToken } from "./src/api/api";
-import { Loader } from "./src/components";
 import { storage } from "./src/helper";
-import { actions } from "./src/redux";
 import store from "./src/redux/store";
 import {
   Account,
@@ -115,49 +111,19 @@ function App() {
   }
 
   const ProtectedRoute = ({ children }) => {
-    const dispatch = useDispatch();
-
-    const [isLoading, setIsLoading] = useState(false);
-
     useEffect(() => {
-      async function getMe(id) {
-        try {
-          const response = await userApi.getMe(id);
-          if (response.ok && response.data) {
-            const { _id, email, avatar, username, fullname, contact, address } =
-              response.data[0];
-            dispatch(
-              actions.user.login({
-                id: _id,
-                email: email,
-                avatar: avatar,
-                userName: username,
-                fullName: fullname ?? "",
-                contact,
-                address,
-              })
-            );
-          } else {
-            Alert.alert(response.data.message);
-          }
-        } catch (error) {
-          Alert.alert("An error occurred");
-        }
-      }
-
       async function getToken() {
         try {
-          setIsLoading(true);
-          const token = await storage.get("token");
-          const userId = await storage.get("userId");
+          // const token = await storage.get("token");
+          // test
+          const token =
+            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzMDNhMTkyYjI5NDk4OTEzYmI0NDI1MyIsImFjdGl2ZSI6dHJ1ZSwiaWF0IjoxNjYxMTgyODQ5fQ.Mwq2ZL-o3HYpq2-VRfkMPE5uBohByeaoMUqO2PBgMII";
           if (token) {
             setNewToken(token);
-            getMe(userId);
           }
         } catch (error) {
           Alert.alert("An error occurred");
         }
-        setIsLoading(true);
       }
 
       getToken();
