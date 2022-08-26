@@ -1,4 +1,5 @@
 import Entypo from "@expo/vector-icons/Entypo";
+import { useEffect, useState } from "react";
 import { StyleSheet, View } from "react-native";
 import { useSelector } from "react-redux";
 import Color from "../constants/Color";
@@ -6,17 +7,34 @@ import CustomText from "./CustomText";
 
 export default function Cart({ navigation }) {
   const { isLogin } = useSelector((state) => state.user);
-  const { totalQuantity } = useSelector((state) => state.cart);
+  const { items } = useSelector((state) => state.cart);
+
+  const [quantity, setQuantity] = useState(0);
 
   function onPress() {
     if (isLogin) navigation.navigate("CART");
     else navigation.navigate("LOGIN");
   }
+
+  function calQuantity() {
+    let total = 0;
+    if (items?.length != 0) {
+      for (let i = 0; i < items.length; i++) {
+        total += items[i].quantity;
+      }
+    }
+    return total;
+  }
+
+  useEffect(() => {
+    setQuantity(calQuantity());
+  }, [items]);
+
   return (
     <View style={styles.icon}>
       <Entypo name='shopping-cart' size={24} color='black' onPress={onPress} />
       <View style={styles.amountCtn}>
-        <CustomText text={totalQuantity} style={styles.amount} />
+        <CustomText text={quantity} style={styles.amount} />
       </View>
     </View>
   );

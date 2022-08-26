@@ -10,9 +10,10 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { useEffect } from "react";
 import { Alert, Text, View } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import { Provider } from "react-redux";
+import { Provider, useDispatch } from "react-redux";
 import { setNewToken } from "./src/api/api";
 import { storage } from "./src/helper";
+import { actions } from "./src/redux";
 import store from "./src/redux/store";
 import {
   Account,
@@ -104,22 +105,22 @@ function App() {
             fontWeight: "bold",
           }}
         >
-          CLOTHING SHOP
+          SHOPPING
         </Text>
       </View>
     );
   }
 
   const ProtectedRoute = ({ children }) => {
+    const dispatch = useDispatch();
+
     useEffect(() => {
       async function getToken() {
         try {
-          // const token = await storage.get("token");
-          // test
-          const token =
-            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzMDNhMTkyYjI5NDk4OTEzYmI0NDI1MyIsImFjdGl2ZSI6dHJ1ZSwiaWF0IjoxNjYxMTgyODQ5fQ.Mwq2ZL-o3HYpq2-VRfkMPE5uBohByeaoMUqO2PBgMII";
+          const token = await storage.get("token");
           if (token) {
             setNewToken(token);
+            dispatch(actions.user.login({}));
           }
         } catch (error) {
           Alert.alert("An error occurred");

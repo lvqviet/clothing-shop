@@ -17,6 +17,10 @@ const API_CONSTANTS = {
     GET: "categories",
     GET_BY_ID: (id) => `categories/${id}`,
   },
+  RATING: {
+    SEND: (id) => `products/${id}/ratings`,
+    DELETE: (id) => `products/${id}/ratings`,
+  },
   CART: {
     GET: "users/me/cart",
     UPDATE: "users/me/cart",
@@ -26,6 +30,10 @@ const API_CONSTANTS = {
     GET_ALL: "orders",
     GET_BY_ID: (id) => `orders/${id}`,
     CANCEL: (id) => `orders/${id}/cancel`,
+    RECEIVED: (id) => `orders/${id}?status=delivered`,
+  },
+  VOUCHER: {
+    GET: "vouchers",
   },
 };
 

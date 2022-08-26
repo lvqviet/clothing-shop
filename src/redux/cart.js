@@ -12,14 +12,13 @@ const slice = createSlice({
   reducers: {
     get_cart: (state, action) => {
       const { items } = action.payload;
-      console.log(items);
       let totalQuantity = 0,
         totalPrice = 0;
 
-      items.forEach((item) => {
-        totalQuantity += item.quantity;
-        totalPrice += item.product.price * item.quantity;
-      });
+      // items.forEach((item) => {
+      //   totalQuantity += item.quantity;
+      //   totalPrice += item.product.price * item.quantity;
+      // });
 
       return { ...state, totalQuantity, totalPrice, items };
     },
@@ -40,10 +39,7 @@ const slice = createSlice({
         });
       }
 
-      const totalQuantity = state.totalQuantity + quantity;
-      const totalPrice = state.totalPrice + quantity * product.price;
-
-      return { ...state, totalQuantity, totalPrice, items: cloneItems };
+      return { ...state, items: cloneItems };
     },
     delete_item: (state, action) => {
       const { item } = action.payload;
@@ -51,10 +47,14 @@ const slice = createSlice({
         (e) => e.product._id != item.product._id
       );
 
-      const totalQuantity = state.totalQuantity - item.quantity;
-      const totalPrice = state.totalPrice - item.quantity * item.product.price;
+      if (item.isSelected) {
+        const totalQuantity = state.totalQuantity - item.quantity;
+        const totalPrice =
+          state.totalPrice - item.quantity * item.product.price;
+        return { ...state, totalQuantity, totalPrice, items: cloneItems };
+      }
 
-      return { ...state, totalQuantity, totalPrice, items: cloneItems };
+      return { ...state, items: cloneItems };
     },
     increase_amount: (state, action) => {
       const { item } = action.payload;
@@ -64,10 +64,13 @@ const slice = createSlice({
         return e;
       });
 
-      const totalQuantity = state.totalQuantity + 1;
-      const totalPrice = state.totalPrice + item.product.price;
+      if (item.isSelected) {
+        const totalQuantity = state.totalQuantity + 1;
+        const totalPrice = state.totalPrice + item.product.price;
+        return { ...state, totalQuantity, totalPrice, items: cloneItems };
+      }
 
-      return { ...state, totalQuantity, totalPrice, items: cloneItems };
+      return { ...state, items: cloneItems };
     },
     decrease_amount: (state, action) => {
       const { item } = action.payload;
@@ -77,13 +80,50 @@ const slice = createSlice({
         return e;
       });
 
-      const totalQuantity = state.totalQuantity - 1;
-      const totalPrice = state.totalPrice - item.product.price;
+      if (item.isSelected) {
+        const totalQuantity = state.totalQuantity - 1;
+        const totalPrice = state.totalPrice - item.product.price;
+        return { ...state, totalQuantity, totalPrice, items: cloneItems };
+      }
+
+      return { ...state, items: cloneItems };
+    },
+    select: (state, action) => {
+      const { item } = action.payload;
+      const cloneItems = state.items.map((e) => {
+        if (e.product._id == item.product._id)
+          return { ...e, isSelected: true };
+        return e;
+      });
+
+      const totalQuantity = state.totalQuantity + item.quantity;
+      const totalPrice = state.totalPrice + item.product.price * item.quantity;
+
+      return { ...state, totalQuantity, totalPrice, items: cloneItems };
+    },
+    unselect: (state, action) => {
+      const { item } = action.payload;
+      const cloneItems = state.items.map((e) => {
+        if (e.product._id == item.product._id)
+          return { ...e, isSelected: false };
+        return e;
+      });
+
+      const totalQuantity = state.totalQuantity - item.quantity;
+      const totalPrice = state.totalPrice - item.product.price * item.quantity;
 
       return { ...state, totalQuantity, totalPrice, items: cloneItems };
     },
     clear: (state, action) => {
       return { ...state, items: [], totalQuantity: 0, totalPrice: 0 };
+    },
+    checkout: (state, action) => {
+      const { cartItems } = action.payload;
+      const cloneItems = state.items.filter(
+        (e, index) => !cartItems.includes(index)
+      );
+
+      return { ...state, items: cloneItems, totalQuantity: 0, totalPrice: 0 };
     },
   },
 });

@@ -19,28 +19,32 @@ import { Button, CustomText, Header, Loader } from "../components";
 import Color from "../constants/Color";
 import { format } from "../helper";
 import { actions } from "../redux";
+import { AntDesign } from "@expo/vector-icons";
 
 const height = Dimensions.get("window").height;
 
 const ProductDetail = ({ navigation, route }) => {
-  let IMAGES = [
-    "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT0akBAMBobdjJlfX5wjHeXzOXh5qG9xdsG2Q&usqp=CAU",
-    ,
-    "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT0akBAMBobdjJlfX5wjHeXzOXh5qG9xdsG2Q&usqp=CAU",
-    ,
-    "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT0akBAMBobdjJlfX5wjHeXzOXh5qG9xdsG2Q&usqp=CAU",
-  ];
+  let IMAGES = [];
   const [images, setImages] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [product, setProduct] = useState();
   const [quantity, setQuantity] = useState(1);
   const [showImage, setShowImage] = useState(IMAGES[0]);
+  const [star, setStar] = useState(0);
 
   const { id } = route.params;
   const { isLogin } = useSelector((state) => state.user);
   const { items } = useSelector((state) => state.cart);
 
   const dispatch = useDispatch();
+
+  function calculateAverageStar(ratings) {
+    if (ratings.length == 0) return 0;
+    else if (ratings.length == 1) return ratings[0].rate;
+    let total = 0;
+    ratings.forEach((e) => (total += e.rate));
+    return total / ratings.length;
+  }
 
   const increase = () => {
     if (quantity < product.quantity) setQuantity(quantity + 1);
@@ -57,7 +61,6 @@ const ProductDetail = ({ navigation, route }) => {
     }
 
     const findIndex = items.findIndex((e) => e.product._id == product._id);
-    // console.log(items, findIndex);
     if (findIndex == -1 && quantity > product.quantity) {
       Alert.alert("Không thể thêm vào giỏ vượt quá số lượng sản phẩm");
       return;
@@ -103,7 +106,7 @@ const ProductDetail = ({ navigation, route }) => {
         setIsLoading(false);
         if (response.ok && response.data) {
           setProduct(response.data);
-
+          setStar(calculateAverageStar(response.data.ratings));
           if (response.data?.pictures[0].includes("https")) {
             IMAGES.unshift(response.data.pictures[0]);
             setShowImage(IMAGES[0]);
@@ -120,19 +123,11 @@ const ProductDetail = ({ navigation, route }) => {
     getProduct();
   }, []);
 
-  // useEffect(() => {
-  //   console.log(items);
-  //   console.log("====================================");
-  //   console.log(totalPrice);
-  //   console.log("====================================");
-  //   console.log(totalQuantity);
-  // }, [items]);
-
   return (
     <SafeAreaView style={styles.container}>
       <Loader visible={isLoading} />
       <Header navigation={navigation} showBackButton={true} />
-      <View style={styles.scrollCtn}>
+      <ScrollView style={styles.scrollCtn}>
         <View style={styles.preview}>
           <ScrollView
             style={styles.listImages}
@@ -163,11 +158,46 @@ const ProductDetail = ({ navigation, route }) => {
 
         {product ? (
           <View style={styles.content}>
+            <View
+              style={{
+                flexDirection: "row",
+
+                alignItems: "center",
+                marginBottom: 10,
+              }}
+            >
+              {Array.from(Array(5)).map((value, index) => {
+                if (index < star) {
+                  return (
+                    <AntDesign
+                      name='star'
+                      size={30}
+                      key={index}
+                      color='#FCBD21'
+                    />
+                  );
+                } else {
+                  return (
+                    <AntDesign
+                      name='staro'
+                      size={30}
+                      key={index}
+                      color='#FCBD21'
+                    />
+                  );
+                }
+              })}
+              <CustomText
+                text={`(${product.ratings.length} đánh giá)`}
+                style={[styles.description, { marginBottom: 0 }]}
+              />
+            </View>
             <CustomText text={product.name} style={styles.name} />
             <CustomText
               text={format.currency(product.price)}
               style={styles.price}
             />
+            <CustomText text={"Mô tả:"} style={styles.description} />
             <CustomText text={product.description} style={styles.description} />
 
             <View
@@ -203,10 +233,43 @@ const ProductDetail = ({ navigation, route }) => {
                 }
               />
             </View>
+
+            {product.ratings.length != 0 && (
+              <View>
+                <CustomText
+                  text={"Đánh giá của khách hàng:"}
+                  style={styles.description}
+                />
+                {product.ratings.map((e) => (
+                  <RateItem key={e._id} rate={e.rate} comment={e.comment} />
+                ))}
+              </View>
+            )}
           </View>
         ) : null}
-      </View>
+      </ScrollView>
     </SafeAreaView>
+  );
+};
+
+const RateItem = ({ rate, comment }) => {
+  return (
+    <View>
+      <View style={{ flexDirection: "row" }}>
+        {Array.from(Array(5)).map((value, index) => {
+          if (index < rate) {
+            return (
+              <AntDesign name='star' size={10} key={index} color='#FCBD21' />
+            );
+          } else {
+            return (
+              <AntDesign name='staro' size={10} key={index} color='#FCBD21' />
+            );
+          }
+        })}
+      </View>
+      <CustomText text={comment} style={styles.description} />
+    </View>
   );
 };
 

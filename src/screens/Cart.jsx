@@ -4,7 +4,6 @@ import {
   Alert,
   Dimensions,
   Image,
-  Pressable,
   SafeAreaView,
   ScrollView,
   StyleSheet,
@@ -26,6 +25,7 @@ const Cart = ({ navigation }) => {
   const dispatch = useDispatch();
 
   const [isLoading, setIsLoading] = useState(false);
+  const [productsSelected, setProductsSelected] = useState([]);
 
   function showConfirmDelete(item) {
     Alert.alert("Xoá sản phẩm khỏi giỏ hàng?", "", [
@@ -57,8 +57,16 @@ const Cart = ({ navigation }) => {
     dispatch(actions.cart.decrease_amount({ item }));
   }
 
+  function onSelected(item) {
+    if (item?.isSelected == null || item?.isSelected == false) {
+      dispatch(actions.cart.select({ item }));
+    } else {
+      dispatch(actions.cart.unselect({ item }));
+    }
+  }
+
   async function checkout() {
-    navigation.navigate("CHECKOUT");
+    navigation.navigate("CHECKOUT", { cartItems: productsSelected });
   }
 
   async function updateCart() {
@@ -85,6 +93,13 @@ const Cart = ({ navigation }) => {
 
   useEffect(() => {
     updateCart();
+    const listIndexSelected = items
+      .map((e, index) => {
+        if (e?.isSelected == true) return index;
+        return -1;
+      })
+      .filter((e) => e != -1);
+    setProductsSelected(listIndexSelected);
   }, [items]);
 
   return (
@@ -104,6 +119,7 @@ const Cart = ({ navigation }) => {
             onDelete={() => showConfirmDelete(item)}
             increaseAmount={() => increaseAmount(item)}
             decreaseAmount={() => decreaseAmount(item)}
+            onSelected={() => onSelected(item)}
           />
         ))}
       </ScrollView>
@@ -132,10 +148,17 @@ const Cart = ({ navigation }) => {
   );
 };
 
-const CartItem = ({ item, onDelete, increaseAmount, decreaseAmount }) => {
-  const [isSelected, setIsSelected] = useState(false);
+const CartItem = ({
+  item,
+  onDelete,
+  increaseAmount,
+  decreaseAmount,
+  onSelected,
+}) => {
+  const [isSelected, setIsSelected] = useState(item.isSelected);
 
-  const onSelected = () => {
+  const onSelect = () => {
+    onSelected();
     setIsSelected(!isSelected);
   };
   return (
@@ -149,7 +172,7 @@ const CartItem = ({ item, onDelete, increaseAmount, decreaseAmount }) => {
       />
 
       <Ionicons
-        onPress={onSelected}
+        onPress={onSelect}
         name={isSelected ? "checkbox" : "square-outline"}
         size={20}
         style={{ padding: 6, alignSelf: "center" }}

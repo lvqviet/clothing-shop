@@ -4,6 +4,7 @@ import { useState } from "react";
 import {
   Alert,
   Image,
+  Modal,
   Pressable,
   SafeAreaView,
   ScrollView,
@@ -11,25 +12,24 @@ import {
   View,
 } from "react-native";
 import { useSelector } from "react-redux";
-import { orderApi } from "../api";
-import { Button, CustomText, Header, Loader } from "../components";
+import { orderApi, productApi } from "../api";
+import { Button, CustomText, Header, Input, Loader } from "../components";
 import Color from "../constants/Color";
 import { format } from "../helper";
+import { AntDesign } from "@expo/vector-icons";
 
 const OrderStatus = ({ navigation }) => {
   const [isLoading, setIsLoading] = useState(false);
-  const [active, setActive] = useState(0); // 0: pending, 1: shipping, 2: received
+  const [active, setActive] = useState("created"); // created shipping delivered cancelled
   const [orders, setOrders] = useState([]);
-
-  const { id } = useSelector((state) => state.user);
 
   async function getOrders() {
     try {
       setIsLoading(true);
-      const response = await orderApi.getAll(id);
+      const response = await orderApi.getAll();
       setIsLoading(false);
       if (response.ok && response.data) {
-        setOrders(response.data);
+        setOrders(response.data.reverse());
       } else {
         Alert.alert("An error occurred");
       }
@@ -39,7 +39,7 @@ const OrderStatus = ({ navigation }) => {
   async function confirmReceived(id) {
     try {
       setIsLoading(true);
-      const response = await orderApi.updateStatus(id, { status: 2 });
+      const response = await orderApi.received(id);
       setIsLoading(false);
       if (response.ok) {
         getOrders();
@@ -47,6 +47,21 @@ const OrderStatus = ({ navigation }) => {
         Alert.alert("An error occurred");
       }
     } catch (error) {}
+  }
+
+  async function confirmCancel(id) {
+    try {
+      setIsLoading(true);
+      const response = await orderApi.cancel(id);
+      setIsLoading(false);
+      if (response.ok) {
+        getOrders();
+      } else {
+        Alert.alert("An error occurred");
+      }
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   useEffect(() => {
@@ -68,7 +83,11 @@ const OrderStatus = ({ navigation }) => {
                 return (
                   <OrderItem
                     item={item}
-                    confirmReceived={() => confirmReceived(item._id)}
+                    onPressButton={
+                      item.status == "shipping"
+                        ? () => confirmReceived(item._id)
+                        : () => confirmCancel(item._id)
+                    }
                     key={index}
                   />
                 );
@@ -83,11 +102,11 @@ const TabBar = ({ active, onChange }) => {
   return (
     <View style={styles.tabBarCtn}>
       <Pressable
-        style={[styles.tab, { borderBottomWidth: active == 0 ? 3 : 0 }]}
-        onPress={() => onChange(0)}
+        style={[styles.tab, { borderBottomWidth: active == "created" ? 3 : 0 }]}
+        onPress={() => onChange("created")}
       >
         <CustomText
-          onPress={() => onChange(0)}
+          onPress={() => onChange("created")}
           text='Pending'
           style={[
             styles.tabTitle,
@@ -101,11 +120,14 @@ const TabBar = ({ active, onChange }) => {
       </Pressable>
 
       <Pressable
-        style={[styles.tab, { borderBottomWidth: active == 1 ? 3 : 0 }]}
-        onPress={() => onChange(1)}
+        style={[
+          styles.tab,
+          { borderBottomWidth: active == "shipping" ? 3 : 0 },
+        ]}
+        onPress={() => onChange("shipping")}
       >
         <CustomText
-          onPress={() => onChange(1)}
+          onPress={() => onChange("shipping")}
           text='Shipping'
           style={[
             styles.tabTitle,
@@ -119,12 +141,15 @@ const TabBar = ({ active, onChange }) => {
       </Pressable>
 
       <Pressable
-        style={[styles.tab, { borderBottomWidth: active == 2 ? 3 : 0 }]}
-        onPress={() => onChange(2)}
+        style={[
+          styles.tab,
+          { borderBottomWidth: active == "delivered" ? 3 : 0 },
+        ]}
+        onPress={() => onChange("delivered")}
       >
         <CustomText
-          onPress={() => onChange(2)}
-          text='Received'
+          onPress={() => onChange("delivered")}
+          text='Delivered'
           style={[
             styles.tabTitle,
             {
@@ -137,11 +162,14 @@ const TabBar = ({ active, onChange }) => {
       </Pressable>
 
       <Pressable
-        style={[styles.tab, { borderBottomWidth: active == 3 ? 3 : 0 }]}
-        onPress={() => onChange(3)}
+        style={[
+          styles.tab,
+          { borderBottomWidth: active == "cancelled" ? 3 : 0 },
+        ]}
+        onPress={() => onChange("cancelled")}
       >
         <CustomText
-          onPress={() => onChange(3)}
+          onPress={() => onChange("cancelled")}
           text='Cancelled'
           style={[
             styles.tabTitle,
@@ -157,25 +185,23 @@ const TabBar = ({ active, onChange }) => {
   );
 };
 
-const OrderItem = ({ item, confirmReceived }) => {
-  let totalAmount = 0,
-    totalPrice = 0;
-  item.detail.forEach((e) => {
-    totalAmount += e.amount;
-    totalPrice += e.product.price * e.amount;
+const OrderItem = ({ item, onPressButton }) => {
+  let totalQuantity = 0;
+  item.items.forEach((e) => {
+    totalQuantity += e.quantity;
   });
 
   return (
     <View style={styles.orderItem}>
       <CustomText
         text={`Ngày đặt: ${
-          moment(item?.paymentDate).format("HH:mm DD/MM/yyyy") ?? ""
+          moment(item?.createdAt).format("HH:mm DD/MM/yyyy") ?? ""
         }`}
         style={styles.date}
       />
 
-      {item.detail.map((e, index) => {
-        return <CartItem key={index} item={e} />;
+      {item.items.map((e, index) => {
+        return <CartItem key={index} item={e} status={item.status} />;
       })}
 
       <View
@@ -185,64 +211,200 @@ const OrderItem = ({ item, confirmReceived }) => {
           paddingHorizontal: 15,
         }}
       >
-        <CustomText text={`Total(${totalAmount}): `} style={styles.total} />
+        <CustomText text={`Tổng(${totalQuantity}): `} style={styles.total} />
         <CustomText
-          text={format.currency(10000000 + 23000)}
+          text={format.currency(
+            item.totalPayment + item.deliveryFee - item.discount
+          )}
           style={styles.total}
         />
       </View>
+      <CustomText
+        text={`Số điện thoại: ${item.phoneNumber}`}
+        style={[styles.name, { paddingHorizontal: 15, marginTop: 5 }]}
+      />
 
-      {item.status == 1 ? (
+      <CustomText
+        text={`Địa chỉ: ${item.address}`}
+        style={[styles.name, { paddingHorizontal: 15, marginTop: 5 }]}
+      />
+
+      {item.status == "shipping" || item.status == "created" ? (
         <View style={{ paddingHorizontal: 100 }}>
-          <Button title='Received' onPress={confirmReceived} />
+          <Button
+            title={item.status == "shipping" ? "Đã nhận" : "Huỷ"}
+            onPress={onPressButton}
+          />
         </View>
       ) : null}
     </View>
   );
 };
 
-const CartItem = ({ item }) => {
+const CartItem = ({ item, status }) => {
+  const [showModal, setShowModal] = useState(false);
+  const [star, setStar] = useState(0);
+  const [comment, setComment] = useState("");
+  const [textBtn, setTextBtn] = useState("Đánh giá");
+
+  async function sendRating() {
+    try {
+      const params = {
+        rate: star,
+        comment,
+      };
+      const res = await productApi.sendRating(item.product._id, params);
+      if (res.ok) {
+        setTextBtn("Đã đánh giá");
+        setShowModal(false);
+      } else {
+        Alert.alert("An error occurred");
+        console.log(res.data);
+      }
+    } catch (error) {}
+  }
+
   return (
-    <View style={styles.cartItem}>
-      <Image
-        source={
-          item.product.image.includes("https")
-            ? {
-                uri: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT0akBAMBobdjJlfX5wjHeXzOXh5qG9xdsG2Q&usqp=CAU",
-              }
-            : require("../../assets/product.jpg")
-        }
-        style={styles.image}
-      />
-      <View
-        style={{
-          width: "80%",
-          paddingHorizontal: 10,
-          justifyContent: "space-between",
-        }}
-      >
-        <CustomText
-          text={"Lò vi sóng thế hệ mới"}
-          style={styles.name}
-          numberOfLines={1}
+    <>
+      <View style={styles.cartItem}>
+        <Image
+          source={
+            item.product.pictures[0].includes("https")
+              ? {
+                  uri: item.product.pictures[0],
+                }
+              : require("../../assets/product.jpg")
+          }
+          style={styles.image}
+          resizeMode='contain'
         />
-        <CustomText
-          text={`Size: ${"--" ?? "XL"}`}
-          style={styles.price}
-          numberOfLines={1}
-        />
-        <View style={styles.priceCtn}>
-          <CustomText text={format.currency(5000000)} style={styles.price} />
-          <CustomText text={`x ${item?.amount ?? 2}`} style={styles.price} />
+        <View
+          style={{
+            width: "80%",
+            paddingHorizontal: 10,
+            justifyContent: "space-between",
+          }}
+        >
+          <CustomText
+            text={item.product.name}
+            style={styles.name}
+            numberOfLines={1}
+          />
+
+          <View style={styles.priceCtn}>
+            <CustomText
+              text={format.currency(item.product.price)}
+              style={styles.price}
+            />
+            <CustomText
+              text={`x ${item?.quantity ?? 2}`}
+              style={styles.price}
+            />
+          </View>
         </View>
       </View>
-    </View>
+      {status === "delivered" && (
+        <View style={{ paddingHorizontal: 100 }}>
+          <Button title={textBtn} onPress={() => setShowModal(true)} />
+        </View>
+      )}
+      <Modal visible={showModal} style={styles.modal} animationType='slide'>
+        <SafeAreaView>
+          <View style={styles.cartItem}>
+            <Image
+              source={
+                item.product.pictures[0].includes("https")
+                  ? {
+                      uri: item.product.pictures[0],
+                    }
+                  : require("../../assets/product.jpg")
+              }
+              style={styles.image}
+              resizeMode='contain'
+            />
+            <View
+              style={{
+                width: "80%",
+                paddingHorizontal: 10,
+                justifyContent: "space-between",
+              }}
+            >
+              <CustomText
+                text={item.product.name}
+                style={styles.name}
+                numberOfLines={1}
+              />
+
+              <View style={styles.priceCtn}>
+                <CustomText
+                  text={format.currency(item.product.price)}
+                  style={styles.price}
+                />
+                <CustomText
+                  text={`x ${item?.quantity ?? 2}`}
+                  style={styles.price}
+                />
+              </View>
+            </View>
+          </View>
+
+          <View style={{ flexDirection: "row", justifyContent: "center" }}>
+            {Array.from(Array(5)).map((value, index) => {
+              if (index < star) {
+                return (
+                  <AntDesign
+                    name='star'
+                    size={30}
+                    key={index}
+                    onPress={() => setStar(index + 1)}
+                    color='#FCBD21'
+                  />
+                );
+              } else {
+                return (
+                  <AntDesign
+                    name='staro'
+                    size={30}
+                    key={index}
+                    onPress={() => setStar(index + 1)}
+                    color='#FCBD21'
+                  />
+                );
+              }
+            })}
+          </View>
+
+          <View style={{ paddingHorizontal: 20 }}>
+            <Input
+              numberOfLines={5}
+              onChangeText={setComment}
+              label='Đánh giá của bạn:'
+              placeholder='Nhập đánh giá'
+              maxLine={5}
+            />
+            <Button
+              title='Gửi đánh giá'
+              onPress={sendRating}
+              disabled={star == 0}
+            />
+            <Button title='Huỷ' onPress={() => setShowModal(false)} />
+          </View>
+        </SafeAreaView>
+      </Modal>
+    </>
   );
 };
 
 export default OrderStatus;
 
 const styles = StyleSheet.create({
+  modal: {
+    margin: 20,
+    height: 300,
+    width: 200,
+    borderRadius: 10,
+    backgroundColor: Color.white,
+  },
   container: {
     flex: 1,
     backgroundColor: "#fff",

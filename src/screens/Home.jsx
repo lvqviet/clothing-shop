@@ -2,6 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
 import {
   Alert,
+  Pressable,
   SafeAreaView,
   ScrollView,
   StyleSheet,
@@ -15,12 +16,14 @@ import { cartApi, productApi } from "../api";
 import { Banner, CustomText, Header, Loader, ProductItem } from "../components";
 import Color from "../constants/Color";
 import { actions } from "../redux";
+import { FontAwesome5 } from "@expo/vector-icons";
 
 const Home = ({ navigation }) => {
   const [categorySelected, setCategorySelected] = useState("Tất cả");
   const [isLoading, setIsLoading] = useState(false);
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [filterIncrease, setFilterIncrease] = useState(true);
 
   const { isLogin } = useSelector((state) => state.user);
   const dispatch = useDispatch();
@@ -80,6 +83,14 @@ const Home = ({ navigation }) => {
     }
   }, [isLogin]);
 
+  useEffect(() => {
+    let sortable = [...products];
+    if (filterIncrease) sortable.sort((a, b) => a.price - b.price);
+    else sortable.sort((a, b) => b.price - a.price);
+
+    setProducts(sortable);
+  }, [filterIncrease]);
+
   return (
     <SafeAreaView style={styles.container}>
       <Loader visible={isLoading} />
@@ -116,6 +127,31 @@ const Home = ({ navigation }) => {
               </View>
             ) : null}
           </View>
+
+          <TouchableOpacity
+            style={styles.filter}
+            onPress={() => {
+              setFilterIncrease(!filterIncrease);
+            }}
+          >
+            <FontAwesome5
+              name={
+                filterIncrease ? "sort-amount-down-alt" : "sort-amount-down"
+              }
+              size={24}
+              color='black'
+              onPress={() => {
+                setFilterIncrease(!filterIncrease);
+              }}
+            />
+            <CustomText
+              text={filterIncrease ? "Giá tăng dần" : "Giá giảm dần"}
+              style={styles.textFilter}
+              onPress={() => {
+                setFilterIncrease(!filterIncrease);
+              }}
+            />
+          </TouchableOpacity>
 
           <View style={styles.listProduct}>
             {products

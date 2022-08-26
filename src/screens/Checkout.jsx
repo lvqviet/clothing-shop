@@ -1,4 +1,5 @@
 import React from "react";
+import { useEffect, useState } from "react";
 import {
   Alert,
   Dimensions,
@@ -11,31 +12,34 @@ import {
 } from "react-native";
 import { useDispatch } from "react-redux";
 import { useSelector } from "react-redux";
-import { orderApi } from "../api";
+import { cartApi, orderApi } from "../api";
 import { Button, CustomText, Header, Input, Loader } from "../components";
 import Color from "../constants/Color";
 import Regex from "../constants/Regex";
 import { format } from "../helper";
 import { actions } from "../redux";
+import SelectDropdown from "react-native-select-dropdown";
+import { Entypo } from "@expo/vector-icons";
+import moment from "moment";
 
 const width = Dimensions.get("screen").width;
 
-const Checkout = ({ navigation }) => {
-  const { products, totalPrice, totalAmount } = useSelector(
+const Checkout = ({ navigation, route }) => {
+  const { cartItems } = route.params;
+  const { items, totalPrice, totalQuantity } = useSelector(
     (state) => state.cart
   );
-  const { id, contact, address, fullName } = useSelector((state) => state.user);
 
   const dispatch = useDispatch();
 
   const [inputs, setInputs] = React.useState({
-    name: fullName,
-    phone: contact,
-    address: address,
-    // note: "",
+    phoneNumber: "",
+    address: "",
   });
   const [errors, setErrors] = React.useState({});
   const [loading, setLoading] = React.useState(false);
+  const [vouchers, setVouchers] = useState([]);
+  const [voucherSelected, setVoucherSelected] = useState();
 
   const handleOnchange = (text, input) => {
     setInputs((prevState) => ({ ...prevState, [input]: text }));
@@ -44,26 +48,34 @@ const Checkout = ({ navigation }) => {
     setErrors((prevState) => ({ ...prevState, [input]: error }));
   };
 
+  async function getCart() {
+    try {
+      const response = await cartApi.get();
+      if (response.ok && response.data) {
+        dispatch(actions.cart.get_cart({ items: response.data }));
+      } else {
+        Alert.alert(response.data.message);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
   async function checkout() {
     try {
       setLoading(true);
-      const orderProducts = products.map((e) => {
-        return { productId: e.product._id, amount: e.amount, size: e.size };
-      });
 
-      const response = await orderApi.create({
-        userId: id,
-        fullname: inputs.name.trim(),
-        contact: inputs.phone.trim(),
-        address: inputs.address.trim(),
-        detail: orderProducts,
-        status: 0,
+      const response = await orderApi.checkout({
+        cartItems,
+        phoneNumber: inputs.phoneNumber,
+        address: inputs.address,
+        voucherId: voucherSelected?._id ?? "",
       });
       setLoading(false);
 
       if (response.ok) {
-        dispatch(actions.cart.clear());
-        Alert.alert("Order successfully", "", [
+        getCart();
+        Alert.alert("Đặt hàng thành công", "", [
           {
             text: "OK",
             onPress: () => navigation.replace("ORDER_STATUS"),
@@ -81,16 +93,11 @@ const Checkout = ({ navigation }) => {
     Keyboard.dismiss();
     let isValid = true;
 
-    if (!inputs.name) {
-      handleError("Please input name", "name");
+    if (!inputs.phoneNumber) {
+      handleError("Please input phone number", "phoneNumber");
       isValid = false;
-    }
-
-    if (!inputs.phone) {
-      handleError("Please input phone number", "phone");
-      isValid = false;
-    } else if (!inputs.phone.match(Regex.vietnamesePhoneNumber)) {
-      handleError("Please input a valid phone number", "phone");
+    } else if (!inputs.phoneNumber.match(Regex.vietnamesePhoneNumber)) {
+      handleError("Please input a valid phone number", "phoneNumber");
       isValid = false;
     }
 
@@ -101,10 +108,35 @@ const Checkout = ({ navigation }) => {
 
     if (isValid) {
       checkout();
+      console.log({
+        cartItems,
+        phoneNumber: inputs.phoneNumber,
+        address: inputs.address,
+        voucherId: voucherSelected?._id ?? "",
+      });
     }
   };
 
-  // function checkout() {}
+  async function getVouchers() {
+    try {
+      setLoading(true);
+      const res = await orderApi.getVoucher();
+      setLoading(false);
+      if (res.ok && res.data) {
+        const activeVoucher = res.data.filter((e) =>
+          moment(e.expiredAt).isAfter(Date.now())
+        );
+        setVouchers(activeVoucher);
+      }
+    } catch (error) {
+      Alert.alert("An error occurred");
+    }
+  }
+
+  useEffect(() => {
+    getVouchers();
+  }, []);
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>
       <Loader visible={loading} />
@@ -117,22 +149,13 @@ const Checkout = ({ navigation }) => {
       <ScrollView style={{ marginTop: 45 }}>
         <View style={{ marginVertical: 10, marginHorizontal: 15 }}>
           <Input
-            onChangeText={(text) => handleOnchange(text, "name")}
-            onFocus={() => handleError(null, "name")}
-            label='Tên'
-            placeholder='Nhập tên'
-            error={errors.name}
-            value={inputs.name}
-          />
-
-          <Input
             keyboardType='numeric'
-            onChangeText={(text) => handleOnchange(text, "phone")}
-            onFocus={() => handleError(null, "phone")}
+            onChangeText={(text) => handleOnchange(text, "phoneNumber")}
+            onFocus={() => handleError(null, "phoneNumber")}
             label='Số điện thoại'
             placeholder='Nhập số điện thoại'
-            error={errors.phone}
-            value={inputs.phone}
+            error={errors.phoneNumber}
+            value={inputs.phoneNumber}
           />
           <Input
             onChangeText={(text) => handleOnchange(text, "address")}
@@ -144,11 +167,49 @@ const Checkout = ({ navigation }) => {
           />
         </View>
 
-        {products.map((item, index) => (
-          <CartItem key={index} item={item} />
-        ))}
+        {items.map((item, index) => {
+          if (cartItems.includes(index))
+            return <CartItem key={index} item={item} />;
+        })}
       </ScrollView>
       <View style={{ paddingHorizontal: 15 }}>
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <CustomText
+            text={
+              vouchers.length == 0
+                ? "Không có voucher khả dụng"
+                : "Chọn Voucher:"
+            }
+            style={[styles.totalPrice]}
+          />
+          {vouchers.length != 0 && (
+            <SelectDropdown
+              buttonStyle={{ borderRadius: 10, height: 40 }}
+              data={vouchers}
+              onSelect={(item, index) => setVoucherSelected(item)}
+              buttonTextAfterSelection={(item, index) => item.name}
+              rowTextForSelection={(item, index) => item.name}
+              dropdownIconPosition='right'
+              renderDropdownIcon={(isOpened) => {
+                return (
+                  <Entypo
+                    name={isOpened ? "chevron-up" : "chevron-down"}
+                    size={20}
+                    color='black'
+                  />
+                );
+              }}
+              disabled={vouchers.length == 0}
+            />
+          )}
+        </View>
+
         <View
           style={{
             flexDirection: "row",
@@ -176,18 +237,18 @@ const Checkout = ({ navigation }) => {
             justifyContent: "space-between",
           }}
         >
-          <CustomText text={`Tổng(${totalAmount})`} style={styles.total} />
+          <CustomText text={`Tổng(${totalQuantity})`} style={styles.total} />
           <CustomText
-            text={format.currency(totalPrice + 23000)}
+            text={format.currency(
+              voucherSelected?.value == null
+                ? totalPrice + 23000
+                : totalPrice + 23000 - voucherSelected.value
+            )}
             style={styles.total}
           />
         </View>
         <View>
-          <Button
-            title='Proceed To Checkout'
-            onPress={validate}
-            color={Color.black}
-          />
+          <Button title='Đặt hàng' onPress={validate} color={Color.black} />
         </View>
       </View>
     </SafeAreaView>
@@ -199,9 +260,9 @@ const CartItem = ({ item }) => {
     <View style={styles.cartItem}>
       <Image
         source={
-          item.product.image.includes("https")
+          item.product.pictures[0].includes("https")
             ? {
-                uri: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT0akBAMBobdjJlfX5wjHeXzOXh5qG9xdsG2Q&usqp=CAU",
+                uri: item.product.pictures[0],
               }
             : require("../../assets/product.jpg")
         }
@@ -216,21 +277,17 @@ const CartItem = ({ item }) => {
         }}
       >
         <CustomText
-          text={"Lò vi sóng thế hệ mới"}
+          text={item.product.name}
           style={styles.name}
           numberOfLines={1}
         />
-        <CustomText
-          text={`Size: ${item.size}`}
-          style={styles.price}
-          numberOfLines={1}
-        />
+
         <View style={styles.priceCtn}>
           <CustomText
             text={format.currency(item.product.price)}
             style={styles.price}
           />
-          <CustomText text={`x ${item.amount}`} style={styles.price} />
+          <CustomText text={`x ${item.quantity}`} style={styles.price} />
         </View>
       </View>
     </View>
@@ -268,11 +325,11 @@ const styles = StyleSheet.create({
     color: Color.grey555555,
   },
   total: {
-    fontSize: 22,
+    fontSize: 18,
     fontFamily: "Poppins_600SemiBold",
   },
   totalPrice: {
-    fontSize: 20,
+    fontSize: 16,
     fontFamily: "Poppins_500Medium",
     color: Color.grey555555,
   },
