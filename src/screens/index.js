@@ -8,6 +8,7 @@ import ProductDetail from "./ProductDetail";
 import Profile from "./Profile";
 import Register from "./Register";
 import ChangePassword from "./ChangePassword";
+import Search from "./Search";
 
 export {
   Account,
@@ -20,4 +21,5 @@ export {
   Profile,
   Register,
   ChangePassword,
+  Search,
 };

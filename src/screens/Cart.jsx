@@ -130,7 +130,7 @@ const Cart = ({ navigation }) => {
             justifyContent: "space-between",
           }}
         >
-          <CustomText text={`Total(${totalQuantity})`} style={styles.total} />
+          <CustomText text={`Tổng(${totalQuantity})`} style={styles.total} />
           <CustomText text={format.currency(totalPrice)} style={styles.total} />
         </View>
         <View style={{ flexDirection: "row", justifyContent: "space-around" }}>

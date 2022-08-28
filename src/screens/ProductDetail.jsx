@@ -62,13 +62,13 @@ const ProductDetail = ({ navigation, route }) => {
 
     const findIndex = items.findIndex((e) => e.product._id == product._id);
     if (findIndex == -1 && quantity > product.quantity) {
-      Alert.alert("Không thể thêm vào giỏ vượt quá số lượng sản phẩm");
+      Alert.alert("Không thể thêm vào giỏ vượt quá số lượng trong kho");
       return;
     } else if (
       findIndex != -1 &&
       quantity + items[findIndex].quantity > product.quantity
     ) {
-      Alert.alert("Không thể thêm vào giỏ vượt quá số lượng sản phẩm");
+      Alert.alert("Không thể thêm vào giỏ vượt quá số lượng trong kho");
       return;
     }
 

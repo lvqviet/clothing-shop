@@ -12,7 +12,7 @@ import {
 } from "react-native";
 import { useDispatch } from "react-redux";
 import { useSelector } from "react-redux";
-import { cartApi, orderApi } from "../api";
+import { cartApi, orderApi, userApi } from "../api";
 import { Button, CustomText, Header, Input, Loader } from "../components";
 import Color from "../constants/Color";
 import Regex from "../constants/Regex";
@@ -46,6 +46,22 @@ const Checkout = ({ navigation, route }) => {
   };
   const handleError = (error, input) => {
     setErrors((prevState) => ({ ...prevState, [input]: error }));
+  };
+
+  const getProfile = async () => {
+    try {
+      setLoading(true);
+      const response = await userApi.getProfile();
+      setLoading(false);
+      if (response.ok) {
+        setInputs({
+          phoneNumber: response.data?.phoneNumber ?? "",
+          address: response.data?.address ?? "",
+        });
+      }
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   async function getCart() {
@@ -82,7 +98,7 @@ const Checkout = ({ navigation, route }) => {
           },
         ]);
       } else {
-        console.log(response.config);
+        Alert.alert(response.data.message);
       }
     } catch (error) {
       console.log(error);
@@ -108,12 +124,6 @@ const Checkout = ({ navigation, route }) => {
 
     if (isValid) {
       checkout();
-      console.log({
-        cartItems,
-        phoneNumber: inputs.phoneNumber,
-        address: inputs.address,
-        voucherId: voucherSelected?._id ?? "",
-      });
     }
   };
 
@@ -123,8 +133,8 @@ const Checkout = ({ navigation, route }) => {
       const res = await orderApi.getVoucher();
       setLoading(false);
       if (res.ok && res.data) {
-        const activeVoucher = res.data.filter((e) =>
-          moment(e.expiredAt).isAfter(Date.now())
+        const activeVoucher = res.data.filter(
+          (e) => moment(e.expiredAt).isAfter(Date.now()) && e.quantity > 0
         );
         setVouchers(activeVoucher);
       }
@@ -135,6 +145,7 @@ const Checkout = ({ navigation, route }) => {
 
   useEffect(() => {
     getVouchers();
+    getProfile();
   }, []);
 
   return (
@@ -190,6 +201,7 @@ const Checkout = ({ navigation, route }) => {
           />
           {vouchers.length != 0 && (
             <SelectDropdown
+              dropdownStyle={{ maxHeight: 180 }}
               buttonStyle={{ borderRadius: 10, height: 40 }}
               data={vouchers}
               onSelect={(item, index) => setVoucherSelected(item)}
@@ -231,6 +243,20 @@ const Checkout = ({ navigation, route }) => {
           <CustomText text='Phí ship:' style={[styles.totalPrice]} />
           <CustomText text={format.currency(23000)} style={styles.totalPrice} />
         </View>
+        {voucherSelected && (
+          <View
+            style={{
+              flexDirection: "row",
+              justifyContent: "space-between",
+            }}
+          >
+            <CustomText text='Giảm giá:' style={[styles.totalPrice]} />
+            <CustomText
+              text={`- ${format.currency(voucherSelected.value)}`}
+              style={styles.totalPrice}
+            />
+          </View>
+        )}
         <View
           style={{
             flexDirection: "row",
@@ -242,6 +268,8 @@ const Checkout = ({ navigation, route }) => {
             text={format.currency(
               voucherSelected?.value == null
                 ? totalPrice + 23000
+                : totalPrice + 23000 - voucherSelected.value < 0
+                ? 0
                 : totalPrice + 23000 - voucherSelected.value
             )}
             style={styles.total}

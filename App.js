@@ -24,6 +24,7 @@ import {
   OrderStatus,
   ProductDetail,
   Register,
+  Search,
 } from "./src/screens";
 import Main from "./src/screens/Main";
 
@@ -73,6 +74,11 @@ const ProtectedRoutes = [
   {
     name: "ORDER_STATUS",
     component: OrderStatus,
+    headerShown: false,
+  },
+  {
+    name: "SEARCH",
+    component: Search,
     headerShown: false,
   },
 ];

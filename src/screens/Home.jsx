@@ -7,13 +7,21 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
 import { useDispatch } from "react-redux";
 import { useSelector } from "react-redux";
 import { cartApi, productApi } from "../api";
-import { Banner, CustomText, Header, Loader, ProductItem } from "../components";
+import {
+  Banner,
+  CustomText,
+  Header,
+  Input,
+  Loader,
+  ProductItem,
+} from "../components";
 import Color from "../constants/Color";
 import { actions } from "../redux";
 import { FontAwesome5 } from "@expo/vector-icons";
@@ -24,6 +32,7 @@ const Home = ({ navigation }) => {
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [filterIncrease, setFilterIncrease] = useState(true);
+  const [search, setSearch] = useState("");
 
   const { isLogin } = useSelector((state) => state.user);
   const dispatch = useDispatch();
@@ -39,7 +48,10 @@ const Home = ({ navigation }) => {
       setIsLoading(false);
       if (response.ok) {
         const productsData = response.data;
-        setProducts(productsData);
+        let sortable = [...productsData];
+        sortable.sort((a, b) => a.price - b.price);
+
+        setProducts(sortable);
       } else {
         Alert.alert(response.data.message);
       }
@@ -74,6 +86,10 @@ const Home = ({ navigation }) => {
     }
   }
 
+  const onSearch = () => {
+    navigation.navigate("SEARCH", { products, key: search });
+  };
+
   useEffect(() => {
     getProducts();
     getCategories();
@@ -97,6 +113,7 @@ const Home = ({ navigation }) => {
       <Header navigation={navigation} />
       <ScrollView style={styles.scrollCtn}>
         <View style={styles.content}>
+          <Search onSearch={onSearch} setSearch={setSearch} />
           <Banner />
 
           <View style={styles.overviewCtn}>
@@ -158,7 +175,7 @@ const Home = ({ navigation }) => {
               .filter((e) => {
                 if (categorySelected === "Tất cả") return true;
                 else {
-                  return e.category == categorySelected;
+                  return e.category._id == categorySelected;
                 }
               })
               .map((item, index) => (
@@ -174,6 +191,48 @@ const Home = ({ navigation }) => {
         </View>
       </ScrollView>
     </SafeAreaView>
+  );
+};
+
+const Search = ({ onSearch, search, setSearch }) => {
+  return (
+    <View
+      style={{
+        flexDirection: "row",
+        width: "100%",
+        paddingHorizontal: 20,
+        height: 40,
+        marginBottom: 10,
+      }}
+    >
+      <View style={{ width: "80%" }}>
+        <TextInput
+          placeholder='Tìm kiếm sản phẩm'
+          onChangeText={setSearch}
+          style={{
+            backgroundColor: Color.light,
+            height: 40,
+            paddingHorizontal: 10,
+          }}
+        />
+      </View>
+      <TouchableOpacity
+        style={{
+          width: "20%",
+          backgroundColor: Color.purple717fe0,
+          height: 40,
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+        onPress={onSearch}
+      >
+        <CustomText
+          text='Tìm'
+          style={{ fontSize: 14, color: Color.white }}
+          onPress={onSearch}
+        />
+      </TouchableOpacity>
+    </View>
   );
 };
 

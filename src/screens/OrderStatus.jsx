@@ -64,6 +64,26 @@ const OrderStatus = ({ navigation }) => {
     }
   }
 
+  function showPopupConfirm(status, id) {
+    Alert.alert(
+      status === "shipping" ? "Xác nhận đã nhận hàng?" : "Xác nhận huỷ đơn?",
+      "",
+      [
+        {
+          text: "Huỷ",
+          style: "cancel",
+        },
+        {
+          text: "OK",
+          onPress:
+            status == "shipping"
+              ? () => confirmReceived(id)
+              : () => confirmCancel(id),
+        },
+      ]
+    );
+  }
+
   useEffect(() => {
     getOrders();
   }, []);
@@ -83,10 +103,8 @@ const OrderStatus = ({ navigation }) => {
                 return (
                   <OrderItem
                     item={item}
-                    onPressButton={
-                      item.status == "shipping"
-                        ? () => confirmReceived(item._id)
-                        : () => confirmCancel(item._id)
+                    onPressButton={() =>
+                      showPopupConfirm(item.status, item._id)
                     }
                     key={index}
                   />
@@ -94,6 +112,12 @@ const OrderStatus = ({ navigation }) => {
               })
           : null}
       </ScrollView>
+      <View style={{ paddingHorizontal: 20 }}>
+        <Button
+          title={"Về trang chủ"}
+          onPress={() => navigation.navigate("HOME")}
+        />
+      </View>
     </SafeAreaView>
   );
 };
