@@ -15,11 +15,6 @@ const slice = createSlice({
       let totalQuantity = 0,
         totalPrice = 0;
 
-      // items.forEach((item) => {
-      //   totalQuantity += item.quantity;
-      //   totalPrice += item.product.price * item.quantity;
-      // });
-
       return { ...state, totalQuantity, totalPrice, items };
     },
     add_to_cart: (state, action) => {

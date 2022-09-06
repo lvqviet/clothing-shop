@@ -20,6 +20,7 @@ import Color from "../constants/Color";
 import { format } from "../helper";
 import { actions } from "../redux";
 import { AntDesign } from "@expo/vector-icons";
+import moment from "moment";
 
 const height = Dimensions.get("window").height;
 
@@ -31,6 +32,7 @@ const ProductDetail = ({ navigation, route }) => {
   const [quantity, setQuantity] = useState(1);
   const [showImage, setShowImage] = useState(IMAGES[0]);
   const [star, setStar] = useState(0);
+  const [flag, setFlag] = useState(false);
 
   const { id } = route.params;
   const { isLogin } = useSelector((state) => state.user);
@@ -71,9 +73,8 @@ const ProductDetail = ({ navigation, route }) => {
       Alert.alert("Không thể thêm vào giỏ vượt quá số lượng trong kho");
       return;
     }
-
     dispatch(actions.cart.add_to_cart({ product, quantity }));
-    updateCart();
+    setFlag(true);
   };
 
   async function updateCart() {
@@ -97,6 +98,13 @@ const ProductDetail = ({ navigation, route }) => {
       console.log(error);
     }
   }
+
+  useEffect(() => {
+    if (flag) {
+      setFlag(false);
+      updateCart();
+    }
+  }, [items]);
 
   useEffect(() => {
     async function getProduct() {
@@ -238,10 +246,10 @@ const ProductDetail = ({ navigation, route }) => {
               <View>
                 <CustomText
                   text={"Đánh giá của khách hàng:"}
-                  style={styles.description}
+                  style={[styles.description, { marginBottom: 10 }]}
                 />
                 {product.ratings.map((e) => (
-                  <RateItem key={e._id} rate={e.rate} comment={e.comment} />
+                  <RateItem key={e._id} item={e} />
                 ))}
               </View>
             )}
@@ -252,12 +260,20 @@ const ProductDetail = ({ navigation, route }) => {
   );
 };
 
-const RateItem = ({ rate, comment }) => {
+const RateItem = ({ item }) => {
   return (
-    <View>
+    <View style={{ marginBottom: 15 }}>
+      <CustomText
+        text={moment(item.createdAt).format("DD/MM/YYYY")}
+        style={[styles.description, { color: Color.grey999999 }]}
+      />
+      <CustomText
+        text={`${item.user.email}:`}
+        style={[styles.description, { color: Color.grey999999 }]}
+      />
       <View style={{ flexDirection: "row" }}>
         {Array.from(Array(5)).map((value, index) => {
-          if (index < rate) {
+          if (index < item.rate) {
             return (
               <AntDesign name='star' size={10} key={index} color='#FCBD21' />
             );
@@ -268,7 +284,7 @@ const RateItem = ({ rate, comment }) => {
           }
         })}
       </View>
-      <CustomText text={comment} style={styles.description} />
+      <CustomText text={item.comment} style={styles.description} />
     </View>
   );
 };
@@ -326,7 +342,6 @@ const styles = StyleSheet.create({
   description: {
     fontFamily: "Poppins_400Regular",
     fontSize: 16,
-    marginBottom: 20,
   },
   option: {
     fontSize: 16,

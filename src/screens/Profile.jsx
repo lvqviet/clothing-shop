@@ -14,7 +14,7 @@ import { actions } from "../redux";
 
 const menuProfileAuth = [
   { title: "Tài khoản của tôi", screen: "ACCOUNT" },
-  { title: "Trạng thái đơn hàng", screen: "ORDER_STATUS" },
+  { title: "Đơn hàng của tôi", screen: "MY_ORDER" },
   { title: "Đổi mật khẩu", screen: "CHANGE_PASSWORD" },
   { title: "Đăng xuất", screen: "" },
 ];

@@ -62,8 +62,8 @@ const Register = ({ navigation }) => {
       setLoading(true);
       const response = await authApi.register({
         email: inputs.email.trim().toLowerCase(),
-        firstName: inputs.firstName.trim(),
-        lastName: inputs.lastName.trim(),
+        firstName: inputs.firstName.replace(/\s/g, " ").trim(),
+        lastName: inputs.lastName.replace(/\s/g, " ").trim(),
         password: inputs.password,
       });
       setLoading(false);

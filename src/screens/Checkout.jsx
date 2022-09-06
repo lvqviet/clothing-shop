@@ -94,7 +94,7 @@ const Checkout = ({ navigation, route }) => {
         Alert.alert("Đặt hàng thành công", "", [
           {
             text: "OK",
-            onPress: () => navigation.replace("ORDER_STATUS"),
+            onPress: () => navigation.replace("MY_ORDER"),
           },
         ]);
       } else {
@@ -134,7 +134,9 @@ const Checkout = ({ navigation, route }) => {
       setLoading(false);
       if (res.ok && res.data) {
         const activeVoucher = res.data.filter(
-          (e) => moment(e.expiredAt).isAfter(Date.now()) && e.quantity > 0
+          (e) =>
+            moment(e.expiredAt).endOf("day").isAfter(Date.now()) &&
+            e.quantity > 0
         );
         setVouchers(activeVoucher);
       }

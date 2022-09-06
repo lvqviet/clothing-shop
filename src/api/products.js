@@ -12,5 +12,9 @@ export default {
 
   sendRating: (id, params) => api.post(API_CONSTANTS.RATING.SEND(id), params),
 
-  deleteRating: (id) => api.delete(API_CONSTANTS.RATING.DELETE(id)),
+  updateRating: (productId, ratingId, params) =>
+    api.put(API_CONSTANTS.RATING.UPDATE(productId, ratingId), params),
+
+  deleteRating: (productId, ratingId) =>
+    api.delete(API_CONSTANTS.RATING.DELETE(productId, ratingId)),
 };

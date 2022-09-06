@@ -19,7 +19,10 @@ const API_CONSTANTS = {
   },
   RATING: {
     SEND: (id) => `products/${id}/ratings`,
-    DELETE: (id) => `products/${id}/ratings`,
+    UPDATE: (productId, ratingId) =>
+      `products/${productId}/ratings/${ratingId}`,
+    DELETE: (productId, ratingId) =>
+      `products/${productId}/ratings/${ratingId}`,
   },
   CART: {
     GET: "users/me/cart",

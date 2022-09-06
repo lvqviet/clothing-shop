@@ -39,9 +39,15 @@ const LoginScreen = ({ navigation }) => {
 
   const login = async () => {
     try {
+      const email = inputs.email.trim().toLowerCase();
+      if (email === "admin@gmail.com") {
+        Alert.alert("Sai email hoặc mật khẩu");
+        return;
+      }
+
       setLoading(true);
       const response = await authApi.login({
-        email: inputs.email.trim().toLowerCase(),
+        email,
         password: inputs.password,
       });
       setLoading(false);
@@ -51,6 +57,8 @@ const LoginScreen = ({ navigation }) => {
         if (token) {
           await storage.set("token", token);
           setNewToken(token);
+          const userData = await userApi.getProfile();
+          await storage.set("userId", userData.data._id);
           dispatch(actions.user.login({}));
           navigation.goBack();
         }

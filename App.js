@@ -21,7 +21,7 @@ import {
   ChangePassword,
   Checkout,
   Login,
-  OrderStatus,
+  MyOrder,
   ProductDetail,
   Register,
   Search,
@@ -72,8 +72,8 @@ const ProtectedRoutes = [
     headerShown: false,
   },
   {
-    name: "ORDER_STATUS",
-    component: OrderStatus,
+    name: "MY_ORDER",
+    component: MyOrder,
     headerShown: false,
   },
   {

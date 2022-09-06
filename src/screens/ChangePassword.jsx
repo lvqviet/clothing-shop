@@ -78,7 +78,7 @@ const ChangePassword = ({ navigation }) => {
       <Header
         showBackButton={true}
         navigation={navigation}
-        title='Tài khoản của tôi'
+        title='Đổi mật khẩu'
         showCartIcon={false}
       />
 

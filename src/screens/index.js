@@ -3,7 +3,7 @@ import Cart from "./Cart";
 import Checkout from "./Checkout";
 import Home from "./Home";
 import Login from "./Login";
-import OrderStatus from "./OrderStatus";
+import MyOrder from "./MyOrder";
 import ProductDetail from "./ProductDetail";
 import Profile from "./Profile";
 import Register from "./Register";
@@ -16,7 +16,7 @@ export {
   Checkout,
   Home,
   Login,
-  OrderStatus,
+  MyOrder,
   ProductDetail,
   Profile,
   Register,

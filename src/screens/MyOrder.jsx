@@ -10,15 +10,16 @@ import {
   ScrollView,
   StyleSheet,
   View,
+  TouchableOpacity,
 } from "react-native";
 import { useSelector } from "react-redux";
 import { orderApi, productApi } from "../api";
 import { Button, CustomText, Header, Input, Loader } from "../components";
 import Color from "../constants/Color";
-import { format } from "../helper";
+import { format, storage } from "../helper";
 import { AntDesign } from "@expo/vector-icons";
 
-const OrderStatus = ({ navigation }) => {
+const MyOrder = ({ navigation }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [active, setActive] = useState("created"); // created shipping delivered cancelled
   const [orders, setOrders] = useState([]);
@@ -29,7 +30,7 @@ const OrderStatus = ({ navigation }) => {
       const response = await orderApi.getAll();
       setIsLoading(false);
       if (response.ok && response.data) {
-        setOrders(response.data.reverse());
+        setOrders(response.data);
       } else {
         Alert.alert("An error occurred");
       }
@@ -42,6 +43,7 @@ const OrderStatus = ({ navigation }) => {
       const response = await orderApi.received(id);
       setIsLoading(false);
       if (response.ok) {
+        Alert.alert("Nhận hàng thành công");
         getOrders();
       } else {
         Alert.alert("An error occurred");
@@ -55,9 +57,11 @@ const OrderStatus = ({ navigation }) => {
       const response = await orderApi.cancel(id);
       setIsLoading(false);
       if (response.ok) {
+        Alert.alert("Huỷ đơn thành công");
         getOrders();
       } else {
         Alert.alert("An error occurred");
+        console.log(response.message);
       }
     } catch (error) {
       console.log(error);
@@ -106,6 +110,7 @@ const OrderStatus = ({ navigation }) => {
                     onPressButton={() =>
                       showPopupConfirm(item.status, item._id)
                     }
+                    getOrders={getOrders}
                     key={index}
                   />
                 );
@@ -209,7 +214,7 @@ const TabBar = ({ active, onChange }) => {
   );
 };
 
-const OrderItem = ({ item, onPressButton }) => {
+const OrderItem = ({ item, onPressButton, getOrders }) => {
   let totalQuantity = 0;
   item.items.forEach((e) => {
     totalQuantity += e.quantity;
@@ -225,7 +230,14 @@ const OrderItem = ({ item, onPressButton }) => {
       />
 
       {item.items.map((e, index) => {
-        return <CartItem key={index} item={e} status={item.status} />;
+        return (
+          <CartItem
+            key={index}
+            item={e}
+            status={item.status}
+            getOrders={getOrders}
+          />
+        );
       })}
 
       <View
@@ -265,11 +277,12 @@ const OrderItem = ({ item, onPressButton }) => {
   );
 };
 
-const CartItem = ({ item, status }) => {
+const CartItem = ({ item, status, getOrders }) => {
   const [showModal, setShowModal] = useState(false);
   const [star, setStar] = useState(0);
   const [comment, setComment] = useState("");
-  const [textBtn, setTextBtn] = useState("Đánh giá");
+  const [isRated, setIsRated] = useState(false);
+  const [ratingId, setRatingId] = useState();
 
   async function sendRating() {
     try {
@@ -277,16 +290,53 @@ const CartItem = ({ item, status }) => {
         rate: star,
         comment,
       };
-      const res = await productApi.sendRating(item.product._id, params);
-      if (res.ok) {
-        setTextBtn("Đã đánh giá");
-        setShowModal(false);
+      let res;
+      if (isRated) {
+        res = await productApi.updateRating(item.product._id, ratingId, params);
       } else {
-        Alert.alert("An error occurred");
+        res = await productApi.sendRating(item.product._id, params);
+      }
+      if (res.ok) {
+        setShowModal(false);
+        Alert.alert("Đánh giá thành công");
+        getOrders();
+      } else {
+        Alert.alert(res.data.message);
         console.log(res.data);
       }
     } catch (error) {}
   }
+
+  async function deleteRating() {
+    try {
+      const res = await productApi.deleteRating(item.product._id, ratingId);
+
+      if (res.ok) {
+        setShowModal(false);
+        Alert.alert("Xoá đánh giá thành công");
+        setTimeout(() => {
+          getOrders();
+        }, 1000);
+      } else {
+        Alert.alert(res.data.message);
+        console.log(res.data);
+      }
+    } catch (error) {}
+  }
+
+  useEffect(() => {
+    (async () => {
+      const id = await storage.get("userId");
+      const findIndex = item.product.ratings.findIndex((e) => e.user === id);
+      if (findIndex != -1) {
+        const rating = item.product.ratings[findIndex];
+        setIsRated(true);
+        setRatingId(rating._id);
+        setStar(rating.rate);
+        setComment(rating.comment);
+      }
+    })();
+  }, []);
 
   return (
     <>
@@ -329,7 +379,10 @@ const CartItem = ({ item, status }) => {
       </View>
       {status === "delivered" && (
         <View style={{ paddingHorizontal: 100 }}>
-          <Button title={textBtn} onPress={() => setShowModal(true)} />
+          <Button
+            title={isRated ? "Đánh giá lại" : "Đánh giá"}
+            onPress={() => setShowModal(true)}
+          />
         </View>
       )}
       <Modal visible={showModal} style={styles.modal} animationType='slide'>
@@ -400,18 +453,31 @@ const CartItem = ({ item, status }) => {
 
           <View style={{ paddingHorizontal: 20 }}>
             <Input
+              defaultValue={comment}
               numberOfLines={5}
               onChangeText={setComment}
               label='Đánh giá của bạn:'
               placeholder='Nhập đánh giá'
               maxLine={5}
+              init
             />
+
             <Button
               title='Gửi đánh giá'
               onPress={sendRating}
               disabled={star == 0}
             />
-            <Button title='Huỷ' onPress={() => setShowModal(false)} />
+            {isRated && (
+              <CustomText
+                text={"Xoá đánh giá này"}
+                style={styles.deleteRating}
+                onPress={deleteRating}
+              />
+            )}
+
+            <View style={{ marginTop: "70%" }}>
+              <Button title='Trở lại' onPress={() => setShowModal(false)} />
+            </View>
           </View>
         </SafeAreaView>
       </Modal>
@@ -419,7 +485,7 @@ const CartItem = ({ item, status }) => {
   );
 };
 
-export default OrderStatus;
+export default MyOrder;
 
 const styles = StyleSheet.create({
   modal: {
@@ -498,5 +564,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: "Poppins_600SemiBold",
     marginBottom: 10,
+  },
+  deleteRating: {
+    fontSize: 16,
+    fontFamily: "Poppins_500Medium",
+    color: Color.error,
+    alignSelf: "center",
   },
 });
